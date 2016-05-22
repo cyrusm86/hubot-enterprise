@@ -53,6 +53,7 @@ class archive
 
   archive_old: (robot, msg, seconds, patterns, thisChannel) ->
     _this = this
+    totalArchived = 0
     channelPatterns = new RegExp('('+(patterns.join '|')+')', 'i')
     now = Math.floor(Date.now()/1000)
     robot.logger.debug 'Archiving older than :'+seconds+' seconds'
@@ -61,14 +62,18 @@ class archive
         channels = _this.sort_channels robot, r, thisChannel, channelPatterns
         return Promise.map(channels, (channel) ->
           robot.logger.debog
-          create_time = Math.floor((now - channel.created))
+          create_time = Math.floor(now - channel.created)
           robot.logger.debug 'Channel: '+channel.name+' Create elapsed time: '+create_time+' created time: '+channel.created
           if create_time > seconds
             robot.logger.debug 'archiving '+channel.name+' '+channel.id+' ('+create_time+')'
-            return _this.archive_single robot, msg, channel, create_time
+            return _this.archive_single(robot, msg, channel, create_time)
+              .then (r) ->
+                totalArchived++
+                return r
         )
       .then (r) ->
         robot.logger.debug 'MAP DONE'
+        r.totalArchived = totalArchived
         return r
       .catch (r) ->
         robot.logger.debug r

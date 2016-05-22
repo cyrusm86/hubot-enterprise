@@ -1,7 +1,7 @@
 {
   "name": "hubot-admin",
-  "version": "0.0.0",
-  "description": "Administration tools for hubot",
+  "version": "0.0.1",
+  "description": "Administration tools for hubot enterprise",
   "main": "index.coffee",
   "scripts": {
     "test": "grunt test"
