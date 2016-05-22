@@ -10,12 +10,13 @@ http://www.apache.org/licenses/LICENSE-2.0
 Unless required by applicable law or agreed to in writing,
 Software distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and limitations under the License. 
+See the License for the specific language governing permissions and limitations under the License.
 ###
 
 
 #AdminExt = require './admin-slack'
 Promise = require 'bluebird'
+moment = require 'moment'
 ARCH_PREFIX = 'ARCH-'
 #adapter = new AdminExt()
 
@@ -47,7 +48,7 @@ class archive
         return _adapter.rename(channel.id, ARCH_PREFIX+Date.now())
       .then (r) ->
         robot.logger.debug 'rename: '+r+', -> BACK'
-        msg.reply 'archived channel: '+channel.name+' '+channel.id+' ('+create_time+')'
+        msg.reply 'archived channel: '+channel.name+' ('+channel.id+'), created '+moment(channel.created*1000).fromNow()
         return channel.name
 
   archive_old: (robot, msg, seconds, patterns, thisChannel) ->

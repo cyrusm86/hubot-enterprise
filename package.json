@@ -15,7 +15,8 @@
   "dependencies": {
     "lodash": "^4.6.1",
     "request": "^2.69.0",
-    "bluebird": "^3.3.4"
+    "bluebird": "^3.3.4",
+    "moment": "^2.13.0"
   },
   "peerDependencies": {
     "hubot": "2.x"
