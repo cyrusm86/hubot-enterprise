@@ -31,4 +31,4 @@ module.exports = (robot) ->
     archive.archive_old(robot, msg, seconds, patterns, room)
       .then (r) ->
         robot.logger.debug 'back from Promise', r
-        msg.reply 'done'
+        msg.reply 'done, total archived: '+r.length
