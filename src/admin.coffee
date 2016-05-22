@@ -27,7 +27,7 @@ module.exports = (robot) ->
       when msg.match[2]=='s' then msg.match[1]
     # currently hardcoded patterns
     patterns = ['advantage', 'incident']
-    msg.reply 'archiving rooms with pattern: '+patterns+' older than '+msg.match[1]+msg.match[2]
+    msg.reply 'archiving channels with pattern: '+patterns+' older than '+msg.match[1]+msg.match[2]
     archive.archive_old(robot, msg, seconds, patterns, room)
       .then (r) ->
         robot.logger.debug 'back from Promise', r
