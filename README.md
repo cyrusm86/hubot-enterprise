@@ -23,5 +23,7 @@ Run with environment variable `SLACK_APP_TOKEN` to enable slack Web API integrat
 
 Supported commands:
 
-1. archive: archiving all channels older than specified time
+1. archive old: archiving all channels older than specified time
   * `admin archive older 3<h/m/s>`
+2. archive specific: archiving specific channel
+  * `admin archive channel #channelName`

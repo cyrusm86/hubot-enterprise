@@ -32,7 +32,7 @@ class archive
         ret.push channel
     return ret
 
-  archive_single: (robot, msg, channel, create_time) ->
+  archive_single: (robot, msg, channel) ->
     robot.logger.debug channel
     robot.logger.debug 'joining'
     _adapter = @adapter
@@ -51,6 +51,13 @@ class archive
         msg.reply 'archived channel: '+channel.name+' ('+channel.id+'), created '+moment(channel.created*1000).fromNow()
         return channel.name
 
+  archive_channel: (robot, msg, channel) ->
+    _adapter = @adapter
+    _this = this
+    return _adapter.channelInfo(channel)
+      .then (r) ->
+        return _this.archive_single(robot, msg, r)
+
   archive_old: (robot, msg, seconds, patterns, thisChannel) ->
     _this = this
     totalArchived = 0
@@ -66,7 +73,7 @@ class archive
           robot.logger.debug 'Channel: '+channel.name+' Create elapsed time: '+create_time+' created time: '+channel.created
           if create_time > seconds
             robot.logger.debug 'archiving '+channel.name+' '+channel.id+' ('+create_time+')'
-            return _this.archive_single(robot, msg, channel, create_time)
+            return _this.archive_single(robot, msg, channel)
               .then (r) ->
                 totalArchived++
                 return r
