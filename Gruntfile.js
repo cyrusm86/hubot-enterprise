@@ -6,8 +6,9 @@ module.exports = function (grunt) {
     mochaTest: {
       test: {
         options: {
-          reporter: 'spec',
-          require: 'coffee-script'
+          reporter: 'XUnit',
+          require: 'coffee-script',
+          captureFile: './test/xunit.xml'
         },
         src: ['test/**/*.coffee']
       }
