@@ -71,7 +71,6 @@ node {
             def version = get_version ('package.json')
             echo "version ${version}"
             changeURL = check_pr(env) ? "\nChange URL: ${env.CHANGE_URL}" : "";
-            sh 'env'
             stage 'build'
             sh 'npm install'
             stage 'linter'
