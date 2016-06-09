@@ -8,7 +8,8 @@ module.exports = function (grunt) {
         options: {
           reporter: 'XUnit',
           require: 'coffee-script',
-          captureFile: './test/xunit.xml'
+		  captureFile: './test/xunit.xml',
+		  force: true
         },
         src: ['test/**/*.coffee']
       }
@@ -32,3 +33,5 @@ module.exports = function (grunt) {
   grunt.registerTask('test:watch', ['watch']);
   grunt.registerTask('default', ['test']);
 };
+
+

@@ -10,26 +10,36 @@ http://www.apache.org/licenses/LICENSE-2.0
 Unless required by applicable law or agreed to in writing,
 Software distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and limitations under the License. 
+See the License for the specific language governing permissions and limitations under the License.
 ###
 
+# change log level to eliminate hubot warning about copoyright style
+process.env.HUBOT_LOG_LEVEL='error'
 
+Helper = require('hubot-test-helper')
 chai = require 'chai'
-sinon = require 'sinon'
-chai.use require 'sinon-chai'
 
 expect = chai.expect
 
-describe 'apppulsemobile', ->
+helper = new Helper('../src/admin.coffee')
+
+describe 'hubot-admin tests', ->
   beforeEach ->
-    @robot =
-      respond: sinon.spy()
-      hear: sinon.spy()
+    @room = helper.createRoom()
 
-    require('../src/apppulsemobile')(@robot)
+  afterEach ->
+    @room.destroy()
 
-  it 'registers a respond listener', ->
-    expect(@robot.respond).to.have.been.calledWith(/hello/)
+  it 'admin archive #general channel', ->
+    @room.user.say('alice', '@hubot admin archive channel #general').then =>
+      expect(@room.messages).to.eql [
+        ['alice', '@hubot admin archive channel #general']
+        ['hubot', '@alice cannot archive #general channel']
+      ]
 
-  it 'registers a hear listener', ->
-    expect(@robot.hear).to.have.been.calledWith(/orly/)
+  it 'admin archive #some channel', ->
+    @room.user.say('bob', '@hubot admin archive channel #some').then =>
+      expect(@room.messages).to.eql [
+        ['bob', '@hubot admin archive channel #some']
+        ['hubot', '@bob could not find channel some']
+      ]

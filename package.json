@@ -1,10 +1,12 @@
 {
   "name": "hubot-admin",
-  "version": "0.0.2",
+  "version": "0.0.14",
   "description": "Administration tools for hubot enterprise",
   "main": "index.coffee",
   "scripts": {
-    "test": "grunt test"
+    "test": "grunt test",
+    "coffeelint": "coffeelint --reporter jslint -r . > coffee-lint.xml || true",
+	"jslint": "jshint --exclude-path .gitignore --reporter=jslint .> js-lint.xml || true"
   },
   "keywords": [
     "hubot",
@@ -29,12 +31,18 @@
    "grunt-contrib-watch": "~0.6.1",
    "grunt-mocha-test": "~0.12.7",
    "grunt-release": "~0.11.0",
+   "hubot-test-helper": "^1.4.4",
    "hubot": "2.x",
    "matchdep": "~0.3.0",
    "mocha": "^2.1.0",
    "sinon": "^1.13.0",
    "sinon-chai": "^2.7.0"
  },
+  "coffeelintConfig": {
+    "max_line_length": {
+      "limitComments": false
+    }
+  },
   "author": "Moshe Belostotsky <belostot@hpe.com>",
   "license": "MIT"
 }

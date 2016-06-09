@@ -20,9 +20,9 @@ moment = require 'moment'
 ARCH_PREFIX = 'ARCH-'
 #adapter = new AdminExt()
 
-class archive
+class Archive
   constructor: (adapter) ->
-    @adapter = new (require './admin-'+adapter)()
+    @adapter = new (require './admin-'+(adapter||'slack'))()
 
   sort_channels: (robot, channels, current, regex) ->
     ret = []
@@ -48,7 +48,8 @@ class archive
         return _adapter.rename(channel.id, ARCH_PREFIX+Date.now())
       .then (r) ->
         robot.logger.debug 'rename: '+r+', -> BACK'
-        msg.reply 'archived channel: '+channel.name+' ('+channel.id+'), created '+moment(channel.created*1000).fromNow()
+        msg.reply 'archived channel: '+channel.name+' ('+channel.id+'), '+
+          'created '+moment(channel.created*1000).fromNow()
         return channel.name
 
   archive_channel: (robot, msg, channel) ->
@@ -70,9 +71,11 @@ class archive
         return Promise.map(channels, (channel) ->
           robot.logger.debog
           create_time = Math.floor(now - channel.created)
-          robot.logger.debug 'Channel: '+channel.name+' Create elapsed time: '+create_time+' created time: '+channel.created
+          robot.logger.debug 'Channel: '+channel.name+' Create elapsed time: '+
+            create_time+' created time: '+channel.created
           if create_time > seconds
-            robot.logger.debug 'archiving '+channel.name+' '+channel.id+' ('+create_time+')'
+            robot.logger.debug 'archiving '+channel.name+' '+channel.id+
+              ' ('+create_time+')'
             return _this.archive_single(robot, msg, channel)
               .then (r) ->
                 totalArchived++
@@ -84,4 +87,4 @@ class archive
         return r
       .catch (r) ->
         robot.logger.debug r
-module.exports = archive
+module.exports = Archive

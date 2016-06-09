@@ -55,8 +55,8 @@ class AdminExt
       token: @apiToken
       exclude_archived: excludeArchived
     return SlackApi.channels.list(opts)
-     .then (r) ->
-       return r.channels
+      .then (r) ->
+        return r.channels
 
   channelInfo: (channelId) ->
     opts =
@@ -64,6 +64,6 @@ class AdminExt
       channel: channelId
     return SlackApi.channels.info(opts)
       .then (r) ->
-        return r.channel  
+        return r.channel
 
 module.exports = AdminExt

@@ -17,7 +17,7 @@ See the License for the specific language governing permissions and limitations 
 Promise = require 'bluebird'
 
 module.exports = (robot) ->
-  archive = new (require '../lib/archive')(robot.adapterName)
+  archive = new (require '../lib/archive')(robot.adapterName||'slack')
 
   robot.respond /admin archive channel #(.*)/i, (msg) ->
     if msg.match[1]=='general'
@@ -31,19 +31,22 @@ module.exports = (robot) ->
     archive.archive_channel(robot, msg, channelId)
       .then (r) ->
         msg.reply 'done'
-     .catch (e) ->
-       robot.logger.error e
-       msg.reply 'Error: '+e
+      .catch (e) ->
+        robot.logger.error e
+        msg.reply 'Error: '+e
+
+
 
   robot.respond /admin archive older ([0-9]+)([hHmMsS])/i, (msg) ->
-    room = msg.message.room;
+    room = msg.message.room
     seconds = switch
       when msg.match[2]=='h' then msg.match[1]*3600
       when msg.match[2]=='m' then msg.match[1]*60
       when msg.match[2]=='s' then msg.match[1]
     # currently hardcoded patterns
     patterns = ['advantage', 'incident']
-    msg.reply 'archiving channels with pattern: '+patterns+' older than '+msg.match[1]+msg.match[2]
+    msg.reply 'archiving channels with pattern: '+patterns+' older than '+
+      msg.match[1]+msg.match[2]
     archive.archive_old(robot, msg, seconds, patterns, room)
       .then (r) ->
         robot.logger.debug 'back from Promise', r
