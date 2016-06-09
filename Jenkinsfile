@@ -20,8 +20,12 @@ def get_tag_version (){
 }
 
 def get_tags_diff () {
-    sh "git describe --tags"
-    sh 'git log --no-merges $(git describe --tags `git rev-list --tags --max-count=1`)..HEAD --pretty=\'tformat:- %s\' > changes.txt'
+    try {
+        sh "git describe --tags"
+        sh 'git log --no-merges $(git describe --tags `git rev-list --tags --max-count=1`)..HEAD --pretty=\'tformat:- %s\' > changes.txt'
+    } catch (e) {
+        sh 'git log --no-merges --pretty=\'tformat:- %s\' > changes.txt'
+    }
     return 'changes.txt'
 }
 
@@ -71,6 +75,7 @@ node {
             def version = get_version ('package.json')
             echo "version ${version}"
             changeURL = check_pr(env) ? "\nChange URL: ${env.CHANGE_URL}" : "";
+            sh 'env'
             stage 'build'
             sh 'npm install'
             stage 'linter'
