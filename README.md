@@ -35,6 +35,13 @@ Run with the generated token as environment variable `SLACK_APP_TOKEN`
 Supported commands:
 
 1. archive old: archiving all channels older than specified time
-  * `admin archive older 3<h/m/s>`
-2. archive specific: archiving specific channel
+  * `admin archive older 3<d/h/m/s>`
+    - Default patterns: incident-, advantage-
+  * `admin archive older 3<d/h/m/s> named pattern1 or pattern2`:
+    - Will archive channels with provided pattern names
+    - Default delimiter is `" or "`, can be changed using env `HUBOT_ADMIN_OR`
+    - Default channel min length is `3`, can be changed using env `HUBOT_ADMIN_CHANNEL_MIN`
+2. Archive specific: archiving specific channel
   * `admin archive channel #channelName`
+  * `admin archive channel this` - to archive current channel
+  (_cannot archive private chat or #general channel_)
