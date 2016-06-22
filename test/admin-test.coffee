@@ -41,5 +41,5 @@ describe 'hubot-admin tests', ->
     @room.user.say('bob', '@hubot admin archive channel #some').then =>
       expect(@room.messages).to.eql [
         ['bob', '@hubot admin archive channel #some']
-        ['hubot', '@bob could not find channel some']
+        ['hubot', '@bob could not find channel #some']
       ]
