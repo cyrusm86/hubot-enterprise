@@ -46,16 +46,20 @@ module.exports = (robot) ->
 
   robot.respond /admin archive older ([0-9]+)([dDhHmMsS]) ?(.*)/i, (msg) ->
     room = msg.message.room
+    type = 'name'
     seconds = switch
       when msg.match[2]=='d' then msg.match[1]*86400
       when msg.match[2]=='h' then msg.match[1]*3600
       when msg.match[2]=='m' then msg.match[1]*60
       when msg.match[2]=='s' then msg.match[1]
     # currently hardcoded patterns
-    if (msg.match[3] && (pattern_option = /named (.*)/i.exec(msg.match[3])))
+    if (msg.match[3] &&
+    (pattern_option = /(named|topic) (.*)/i.exec(msg.match[3])))
       patterns = []
       HUBOT_ADMIN_CHANNEL_MIN = process.env.HUBOT_ADMIN_CHANNEL_MIN || 3
-      for arg in pattern_option[1].split(process.env.HUBOT_ADMIN_OR || ' or ')
+      if pattern_option[1] == 'topic'
+        type = 'topic'
+      for arg in pattern_option[2].split(process.env.HUBOT_ADMIN_OR || ' or ')
         if arg.length > HUBOT_ADMIN_CHANNEL_MIN
           patterns.push arg
         else
@@ -67,8 +71,8 @@ module.exports = (robot) ->
       msg.reply 'no patterns to archive :disappointed:'
       return
     msg.reply 'archiving channels with pattern: "'+patterns.join('", "')+
-      '" older than '+msg.match[1]+msg.match[2]
-    archive.archive_old(robot, msg, seconds, patterns, room)
+      '" older than '+msg.match[1]+msg.match[2]+' by '+type
+    archive.archive_old(robot, msg, seconds, patterns, room, type)
       .then (r) ->
         robot.logger.debug 'back from Promise', r
         msg.reply 'done, total archived: '+r.totalArchived

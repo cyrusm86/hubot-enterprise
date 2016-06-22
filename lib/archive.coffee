@@ -24,11 +24,13 @@ class Archive
   constructor: (adapter) ->
     @adapter = new (require './admin-'+(adapter||'slack'))()
 
-  sort_channels: (robot, channels, current, regex) ->
+  sort_channels: (robot, channels, current, regex, type) ->
     ret = []
+    type = type || 'name'
     for channel in channels
-      if regex.test(channel.name) && channel.name!=current
-        robot.logger.debug channel.name
+      to_test = if (type == 'name') then channel.name else channel.topic.value
+      if regex.test(to_test) && channel.name!=current
+        robot.logger.debug to_test
         ret.push channel
     return ret
 
@@ -59,15 +61,17 @@ class Archive
       .then (r) ->
         return _this.archive_single(robot, msg, r)
 
-  archive_old: (robot, msg, seconds, patterns, thisChannel) ->
+  archive_old: (robot, msg, seconds, patterns, thisChannel, type) ->
     _this = this
     totalArchived = 0
+    type = type || 'name'
     channelPatterns = new RegExp('('+(patterns.join '|')+')', 'i')
     now = Math.floor(Date.now()/1000)
     robot.logger.debug 'Archiving older than :'+seconds+' seconds'
     return @adapter.channelList(true)
       .then (r) ->
-        channels = _this.sort_channels robot, r, thisChannel, channelPatterns
+        channels = _this.sort_channels robot, r, thisChannel, channelPatterns,
+          type
         return Promise.map(channels, (channel) ->
           robot.logger.debog
           create_time = Math.floor(now - channel.created)
