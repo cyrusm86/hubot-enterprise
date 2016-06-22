@@ -30,6 +30,25 @@ describe 'hubot-admin tests', ->
   afterEach ->
     @room.destroy()
 
+  it 'admin archive older 5s', ->
+    @room.user.say('alice', '@hubot admin archive older 5s').then =>
+      expect(@room.messages).to.eql [
+        [ 'alice', '@hubot admin archive older 5s' ],
+        [ 'hubot', '@alice archiving channels with pattern: "advantage", '+
+          '"incident" older than 5s' ]
+      ]
+
+  it 'admin archive older 5s named JJ or BB or DDDD', ->
+    @room.user.say('alice', '@hubot admin archive older 5s named JJ or BB or DDDD').then =>
+      expect(@room.messages).to.eql [
+        [ 'alice', '@hubot admin archive older 5s named JJ or BB or DDDD' ],
+        [ 'hubot', '@alice Channel prefix "JJ" is too short, should be at '+
+          'least 3 characters long' ],
+        [ 'hubot', '@alice Channel prefix "BB" is too short, should be at '+
+          'least 3 characters long' ],
+        [ 'hubot', '@alice archiving channels with pattern: "DDDD" older than 5s' ]
+      ]
+
   it 'admin archive #general channel', ->
     @room.user.say('alice', '@hubot admin archive channel #general').then =>
       expect(@room.messages).to.eql [
