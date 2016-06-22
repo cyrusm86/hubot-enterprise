@@ -1,12 +1,9 @@
 ###
 Copyright 2016 Hewlett-Packard Development Company, L.P.
-
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
-
 http://www.apache.org/licenses/LICENSE-2.0
-
 Unless required by applicable law or agreed to in writing,
 Software distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,7 +21,7 @@ slack_api =
   callAPI: (command, options) ->
     new Promise (resolve, reject)->
       request.post(slack_api.api_url + command, form: options,
-        (err, reponse, body)->
+      (err, reponse, body)->
         if not err and reponse.statusCode == 200
           json = JSON.parse(body)
           reject(json.error) unless json.ok

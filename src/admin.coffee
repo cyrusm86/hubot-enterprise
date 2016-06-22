@@ -19,14 +19,23 @@ Promise = require 'bluebird'
 module.exports = (robot) ->
   archive = new (require '../lib/archive')(robot.adapterName||'slack')
 
-  robot.respond /admin archive channel #(.*)/i, (msg) ->
-    if msg.match[1]=='general'
+  robot.respond /admin archive channel (.*)/i, (msg) ->
+    if msg.match[1]=='#general'
       msg.reply 'cannot archive #general channel'
       return
-    if (!(channelId = /<\#(.*)>/i.exec(msg.envelope.message.rawText)))
+    if (msg.match[1]=='this')
+      if (msg.envelope.message.user.room == msg.envelope.message.user.name || msg.envelope.message.user.room == 'general')
+        msg.reply 'cannot archive private or general channel'
+        return
+      channelId = ['', msg.envelope.message.rawMessage.channel]
+    else if (!msg.match[1].startsWith('#'))
+      msg.reply 'channel name should start with #'
+      return
+    else if (!(channelId = /<\#(.*)>/i.exec(msg.envelope.message.rawText)))
       msg.reply 'could not find channel '+msg.match[1]
       return
     channelId = channelId[1]
+    robot.logger.debug 'archiving channel: '+channelId
     msg.reply 'Yes sir!'
     archive.archive_channel(robot, msg, channelId)
       .then (r) ->
@@ -34,8 +43,6 @@ module.exports = (robot) ->
       .catch (e) ->
         robot.logger.error e
         msg.reply 'Error: '+e
-
-
 
   robot.respond /admin archive older ([0-9]+)([hHmMsS])/i, (msg) ->
     room = msg.message.room
