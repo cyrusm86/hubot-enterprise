@@ -1,6 +1,6 @@
 {
   "name": "hubot-admin",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Administration tools for hubot enterprise",
   "main": "index.coffee",
   "scripts": {
