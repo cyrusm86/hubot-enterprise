@@ -260,7 +260,7 @@ slack_api =
 
 # Example:
 #   options =
-#     token: 'xoxp-25470835060-25470835092-25806738548-bcd3f2b2b0'
+#     token: 'xoxp-25470835060-....'
 #   api = require 'slack_web_api'
 #   api.channels.list(options).then((v)-> console.log v)
 module.exports = slack_api
