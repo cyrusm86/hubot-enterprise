@@ -1,18 +1,18 @@
-# hubot-admin
+# hubot-enterprise
 
-A hubot script for ChatOps Administration integration
+Hubot middleware and scripts for enterprise
 
 ## Installation
 
 In hubot project repo, run:
 
-`npm install hubot-admin --save`
+`npm install hubot-enterprise --save`
 
-Then add **hubot-admin** to your `external-scripts.json`:
+Then add **hubot-enterprise** to your `external-scripts.json`:
 
 ```json
 [
-  "hubot-admin"
+  "hubot-enterprise"
 ]
 ```
 

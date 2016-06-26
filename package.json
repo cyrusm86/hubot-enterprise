@@ -1,7 +1,7 @@
 {
-  "name": "hubot-admin",
+  "name": "hubot-enterprise",
   "version": "0.0.5",
-  "description": "Administration tools for hubot enterprise",
+  "description": "Hubot middleware and scripts for enterprise",
   "main": "index.coffee",
   "scripts": {
     "test": "grunt test",
@@ -11,7 +11,8 @@
   "keywords": [
     "hubot",
     "hubot-scripts",
-    "hubot",
+    "hubot-enterprise",
+	"enterprise",
     "admin"
   ],
   "dependencies": {
@@ -44,5 +45,5 @@
     }
   },
   "author": "Moshe Belostotsky <belostot@hpe.com>",
-  "license": "MIT"
+  "license": "Apache 2.0"
 }
