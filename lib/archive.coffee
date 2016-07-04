@@ -39,9 +39,9 @@ class Archive
     robot.logger.debug 'joining'
     _adapter = @adapter
     return _adapter.join(channel.name)
-      .then (r) ->
-        robot.logger.debug 'join: '+r+', -> setTopic'
-        return _adapter.setTopic(channel.id, channel.name)
+    .then (r) ->
+      robot.logger.debug 'join: '+r+', -> setTopic'
+      return _adapter.setTopic(channel.id, channel.name)
       .then (r) ->
         robot.logger.debug 'setTopic: '+r+' , -> archive'
         return _adapter.archive(channel.id)
@@ -51,15 +51,15 @@ class Archive
       .then (r) ->
         robot.logger.debug 'rename: '+r+', -> BACK'
         msg.reply 'archived channel: '+channel.name+' ('+channel.id+'), '+
-          'created '+moment(channel.created*1000).fromNow()
+            'created '+moment(channel.created*1000).fromNow()
         return channel.name
 
   archive_channel: (robot, msg, channel) ->
     _adapter = @adapter
     _this = this
     return _adapter.channelInfo(channel)
-      .then (r) ->
-        return _this.archive_single(robot, msg, r)
+    .then (r) ->
+      return _this.archive_single(robot, msg, r)
 
   archive_old: (robot, msg, seconds, patterns, thisChannel, type) ->
     _this = this
@@ -69,22 +69,22 @@ class Archive
     now = Math.floor(Date.now()/1000)
     robot.logger.debug 'Archiving older than :'+seconds+' seconds'
     return @adapter.channelList(true)
-      .then (r) ->
-        channels = _this.sort_channels robot, r, thisChannel, channelPatterns,
-          type
-        return Promise.map(channels, (channel) ->
-          robot.logger.debog
-          create_time = Math.floor(now - channel.created)
-          robot.logger.debug 'Channel: '+channel.name+' Create elapsed time: '+
+    .then (r) ->
+      channels = _this.sort_channels robot, r, thisChannel, channelPatterns,
+        type
+      return Promise.map(channels, (channel) ->
+        robot.logger.debog
+        create_time = Math.floor(now - channel.created)
+        robot.logger.debug 'Channel: '+channel.name+' Create elapsed time: '+
             create_time+' created time: '+channel.created
-          if create_time > seconds
+        if create_time > seconds
             robot.logger.debug 'archiving '+channel.name+' '+channel.id+
-              ' ('+create_time+')'
+                ' ('+create_time+')'
             return _this.archive_single(robot, msg, channel)
-              .then (r) ->
-                totalArchived++
-                return r
-        )
+            .then (r) ->
+              totalArchived++
+              return r
+      )
       .then (r) ->
         robot.logger.debug 'MAP DONE'
         r.totalArchived = totalArchived

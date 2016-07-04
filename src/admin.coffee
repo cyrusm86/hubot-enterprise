@@ -38,8 +38,8 @@ module.exports = (robot) ->
     robot.logger.debug 'archiving channel: '+channelId
     msg.reply 'Yes sir!'
     archive.archive_channel(robot, msg, channelId)
-      .then (r) ->
-        msg.reply 'done'
+    .then (r) ->
+      msg.reply 'done'
       .catch (e) ->
         robot.logger.error e
         msg.reply 'Error: '+e
@@ -64,7 +64,7 @@ module.exports = (robot) ->
           patterns.push arg
         else
           msg.reply 'Channel prefix "'+arg+'" is too short, '+
-            'should be at least '+HUBOT_ADMIN_CHANNEL_MIN+' characters long'
+              'should be at least '+HUBOT_ADMIN_CHANNEL_MIN+' characters long'
     else
       patterns = ['advantage', 'incident']
     if patterns.length == 0
@@ -73,6 +73,6 @@ module.exports = (robot) ->
     msg.reply 'archiving channels with pattern: "'+patterns.join('", "')+
       '" older than '+msg.match[1]+msg.match[2]+' by '+type
     archive.archive_old(robot, msg, seconds, patterns, room, type)
-      .then (r) ->
-        robot.logger.debug 'back from Promise', r
-        msg.reply 'done, total archived: '+r.totalArchived
+    .then (r) ->
+      robot.logger.debug 'back from Promise', r
+      msg.reply 'done, total archived: '+r.totalArchived

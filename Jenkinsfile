@@ -1,4 +1,5 @@
-def pipeline = fileLoader.fromGit('integration-flow', 
-    'https://github.com/eedevops/he-jenkins-ci.git', 'master', null, '')
+def pipelineRepo = 'https://github.com/eedevops/he-jenkins-ci.git'
+def pipeline = fileLoader.fromGit('integration-flow',
+    pipelineRepo, 'master', null, '')
 
-pipeline.runPipeline()
+pipeline.runPipeline(pipelineRepo)
