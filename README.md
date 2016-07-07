@@ -68,7 +68,7 @@ module.exports = (robot) ->
 - To register a listener call the following code:
 
 ```coffee
-robot.enterprise.create {product: 'test', action: 'create',
+robot.enterprise.create {action: 'create',
 help: 'create ticket', type: 'respond|hear'}, (msg, _robot)->
   #your code here
 
@@ -76,9 +76,13 @@ _this = @
 @myCallback = (msg, _robot) ->
   #your code here
 
-robot.enterprise.create {product: 'test', action: 'create',
+robot.enterprise.create {action: 'create',
 help: 'create ticket', type: 'respond|hear'}, _this.myCallback
 ```
+- call will look like that `<product> <action>(.*)`
+  - `product` is the suffix of your integration name (`hubot-<product>`)
+- if passed `extra: 'regex string'` then the last part will be replaced with this
+  - `<product> <action><extra_regex>`
 
 ## Testing integration with enterprise support
 **TBD**

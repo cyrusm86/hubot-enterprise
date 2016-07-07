@@ -26,12 +26,13 @@ module.exports = (robot) ->
   'enterprise is present'
 
   #register some functions
-  robot.enterprise.create {product: 'test', action: 'create',
-  help: 'create ticket', type: 'respond'}, (msg, _robot)->
+  robot.enterprise.create {action: 'create',
+  help: 'create ticket', type: 'respond',
+  extra: '([0-9]+)([dDhHmMsS]) ?(.*)',}, (msg, _robot)->
     _robot.logger.debug  'in test create'
     msg.reply 'in test create'
 
-  robot.enterprise.create {product: 'test', action: 'update',
+  robot.enterprise.create {action: 'update',
   help: 'update ticket', type: 'hear'}, (msg, _robot)->
     _robot.logger.debug  'in test update'
     msg.reply 'in test update'

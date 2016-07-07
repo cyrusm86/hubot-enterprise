@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and limitations under the License.
 ###
 
+path = require('path')
 
 module.exports = (robot) ->
   robot.enterprise = {}
@@ -21,7 +22,7 @@ module.exports = (robot) ->
   # register a listener function with hubot-enterprise
   #
   # info: list of the function info:
-  #  product: product name
+  #  product: product name- OPTIONAL (lib will determin product by itself)
   #  action: action to prerform
   #  type: hear/respond
   #  extra: extra regex (after the first 2), default: " (.*)"
@@ -31,10 +32,26 @@ module.exports = (robot) ->
   # will register function with the following regex:
   # /#{info.product} #{info.action} (.*)/i
 
+
+  find_integration_name = ->
+    myError = new Error
+    trace = myError.stack.split('\n')
+    trace.shift()
+    fname = ''
+    loop
+      shift = trace.shift()
+      fname = /\((.*):/i.exec(shift)[1].split(':')[0]
+      unless fname == __filename
+        break
+    fname.match(/\/hubot-(.*?)\//ig).pop().replace(/hubot-|\//g, '')
+
   robot.enterprise.create = (info, callback) ->
-    robot.logger.debug 'in enterprise.create: ', info
-    robot.enterprise.help.push(info)
+    integration_name = find_integration_name()
+    info.product = info.product || integration_name
     extra = info.extra||"(.*)"
+    if !info.type || (info.type != 'hear')
+      info.type = 'respond'
+    robot.enterprise.help.push(info)
     re = new RegExp("#{info.product} #{info.action} #{extra}", 'i')
     robot[info.type] re, (msg) ->
       callback(msg, robot)

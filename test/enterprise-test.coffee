@@ -38,20 +38,40 @@ describe 'enterprise tests', ->
   afterEach ->
     @room.destroy()
 
-  it 'test respond function', ->
+  it 'register respond function', ->
     @room.user.say('alice', '@hubot test update jj').then =>
       expect(@room.messages).to.eql [
         [ 'alice', '@hubot test update jj' ],
         [ 'hubot', '@alice in test update' ]
       ]
-  it 'test hear function', ->
+  it 'register hear function', ->
     @room.user.say('alice', 'test read jj').then =>
       expect(@room.messages).to.eql [
         [ 'alice', 'test read jj' ],
         [ 'hubot', '@alice in test read' ]
       ]
 
-  it 'test help general', ->
+  it 'register default project naming', ->
+    @room.robot.enterprise.create {action: 'read',
+    help: 'read ticket', type: 'hear'}, (msg, _robot)->
+      msg.reply 'in enterprise read'
+    @room.user.say('alice', 'enterprise read jj').then =>
+      expect(@room.messages).to.eql [
+        [ 'alice', 'enterprise read jj' ],
+        [ 'hubot', '@alice in enterprise read' ]
+      ]
+
+  it 'register default listener option (respond)', ->
+    @room.robot.enterprise.create {product: 'bar', action: 'read',
+    help: 'read ticket'}, (msg, _robot)->
+      msg.reply 'in foo read'
+    @room.user.say('alice', '@hubot bar read jj').then =>
+      expect(@room.messages).to.eql [
+        [ 'alice', '@hubot bar read jj' ],
+        [ 'hubot', '@alice in foo read' ]
+      ]
+
+  it 'help general', ->
     @room.user.say('alice', '@hubot enterprise').then =>
       expect(@room.messages).to.eql [
         [ 'alice', '@hubot enterprise' ],
@@ -61,7 +81,7 @@ describe 'enterprise tests', ->
         '@hubot foo read: read ticket' ]
       ]
 
-  it 'test help specific', ->
+  it 'help specific', ->
     @room.user.say('alice', '@hubot enterprise foo').then =>
       expect(@room.messages).to.eql [
         [ 'alice', '@hubot enterprise foo' ],
@@ -69,7 +89,7 @@ describe 'enterprise tests', ->
         '@hubot foo read: read ticket' ]
       ]
 
-  it 'test help none existing', ->
+  it 'help none existing', ->
     @room.user.say('alice', '@hubot enterprise bar').then =>
       expect(@room.messages).to.eql [
         [ 'alice', '@hubot enterprise bar' ],
