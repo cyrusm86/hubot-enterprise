@@ -32,6 +32,9 @@ describe 'enterprise tests', ->
     @room.robot.enterprise.create {product: 'test', action: 'read',
     help: 'read ticket', type: 'hear'}, (msg, _robot)->
       msg.reply 'in test read'
+    @room.robot.enterprise.create {product: 'foo', action: 'read',
+    help: 'read ticket', type: 'respond'}, (msg, _robot)->
+      msg.reply 'in foo read'
   afterEach ->
     @room.destroy()
 
@@ -48,11 +51,28 @@ describe 'enterprise tests', ->
         [ 'hubot', '@alice in test read' ]
       ]
 
-  it 'test help', ->
+  it 'test help general', ->
     @room.user.say('alice', '@hubot enterprise').then =>
       expect(@room.messages).to.eql [
         [ 'alice', '@hubot enterprise' ],
         [ 'hubot', '@alice enterprise help\n'+
         '@hubot test update: update ticket\n'+
-        'test read: read ticket' ]
+        'test read: read ticket\n'+
+        '@hubot foo read: read ticket' ]
+      ]
+
+  it 'test help specific', ->
+    @room.user.say('alice', '@hubot enterprise foo').then =>
+      expect(@room.messages).to.eql [
+        [ 'alice', '@hubot enterprise foo' ],
+        [ 'hubot', '@alice enterprise help\n'+
+        '@hubot foo read: read ticket' ]
+      ]
+
+  it 'test help none existing', ->
+    @room.user.say('alice', '@hubot enterprise bar').then =>
+      expect(@room.messages).to.eql [
+        [ 'alice', '@hubot enterprise bar' ],
+        [ 'hubot', '@alice enterprise help\n'+
+        'there is no such integration bar' ]
       ]

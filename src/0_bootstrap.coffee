@@ -40,13 +40,18 @@ module.exports = (robot) ->
       callback(msg, robot)
 
   # return enterprise help to string
-  robot.enterprise.show_help = () ->
-    res = "enterprise help"
+  robot.enterprise.show_help = (product) ->
+    res = ""
     for elem in robot.enterprise.help
-      res+="\n"+(if elem.type == "respond" then "@#{robot.name} " else "" )+
-      "#{elem.product} #{elem.action}: #{elem.help}"
+      if !product || elem.product == product.trim()
+        res+="\n"+(if elem.type == "respond" then "@#{robot.name} " else "" )+
+        "#{elem.product} #{elem.action}: #{elem.help}"
+    if !res
+      product = if product then product.trim() else ""
+      res = "\nthere is no such integration #{product}"
+    res = "enterprise help"+res
     return res
 
   # listener for help message
-  robot.respond /enterprise/i, (msg) ->
-    msg.reply robot.enterprise.show_help()
+  robot.respond /enterprise(.*)/i, (msg) ->
+    msg.reply robot.enterprise.show_help(msg.match[1])

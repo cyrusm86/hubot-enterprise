@@ -25,7 +25,8 @@ module.exports = (robot) ->
       msg.reply 'cannot archive #general channel'
       return
     if (msg.match[1]=='this')
-      if (msg.envelope.message.user.room == msg.envelope.message.user.name || msg.envelope.message.user.room == 'general')
+      if (msg.envelope.message.user.room == msg.envelope.message.user.name ||
+      msg.envelope.message.user.room == 'general')
         msg.reply 'cannot archive private or general channel'
         return
       channelId = ['', msg.envelope.message.rawMessage.channel]
