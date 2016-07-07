@@ -85,4 +85,15 @@ help: 'create ticket', type: 'respond|hear'}, _this.myCallback
   - `<product> <action><extra_regex>`
 
 ## Testing integration with enterprise support
-**TBD**
+- install `hubot-enterprise` as dev dependency:
+  - `npm install --save-dev https://github.com/eedevops/hubot-enterprise`
+- test using hubot-test-helper, currently use this fork: https://github.com/eedevops/hubot-test-helper
+  - `npm install --save-dev https://github.com/eedevops/hubot-test-helper`
+- follow the documentation of hubot-test-helper with one change:
+
+  ```coffee
+  # Helper class should be initialized with this:
+  helper = new Helper(['../node_modules/hubot-enterprise/src', <your_module>])
+  ```
+
+
