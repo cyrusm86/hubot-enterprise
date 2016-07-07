@@ -21,7 +21,7 @@ chai = require 'chai'
 
 expect = chai.expect
 
-helper = new Helper('../src/admin.coffee')
+helper = new Helper('../src')
 
 describe 'hubot-admin tests', ->
   beforeEach ->
