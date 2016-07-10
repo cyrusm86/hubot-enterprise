@@ -8,6 +8,13 @@
     "coffeelint": "coffeelint --reporter jslint -r . > coffee-lint.xml || true",
 	"jslint": "jshint --exclude-path .gitignore --reporter=jslint .> js-lint.xml || true"
   },
+  "repository": {
+  "type": "git",
+  "url": "https://github.com/eedevops/hubot-enterprise"
+  },
+  "bugs": {
+  "url": "https://github.com/eedevops/hubot-enterprise/issues"
+  },
   "keywords": [
     "hubot",
     "hubot-scripts",
@@ -45,5 +52,5 @@
     }
   },
   "author": "Moshe Belostotsky <belostot@hpe.com>",
-  "license": "Apache 2.0"
+  "license": "Apache-2.0"
 }
