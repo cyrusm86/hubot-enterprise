@@ -6,7 +6,7 @@ Hubot middleware and scripts for enterprise
 
 In hubot project repo, run:
 
-`npm install hubot-enterprise --save`
+`npm install eedevops/hubot-enterprise --save`
 
 Then add **hubot-enterprise** to your `external-scripts.json`, should
 be the **FIRST** in the list:
