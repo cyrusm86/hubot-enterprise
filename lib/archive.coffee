@@ -76,14 +76,14 @@ class Archive
         robot.logger.debog
         create_time = Math.floor(now - channel.created)
         robot.logger.debug 'Channel: '+channel.name+' Create elapsed time: '+
-            create_time+' created time: '+channel.created
+          create_time+' created time: '+channel.created
         if create_time > seconds
-            robot.logger.debug 'archiving '+channel.name+' '+channel.id+
-                ' ('+create_time+')'
-            return _this.archive_single(robot, msg, channel)
-            .then (r) ->
-              totalArchived++
-              return r
+          robot.logger.debug 'archiving '+channel.name+' '+channel.id+
+            ' ('+create_time+')'
+          return _this.archive_single(robot, msg, channel)
+          .then (r) ->
+            totalArchived++
+            return r
       )
       .then (r) ->
         robot.logger.debug 'MAP DONE'

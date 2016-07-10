@@ -18,13 +18,15 @@ Promise = require 'bluebird'
 
 module.exports = (robot) ->
   archive = new (require '../lib/archive')(robot.adapterName||'slack')
+  _this = @
 
-  robot.respond /admin archive channel (.*)/i, (msg) ->
+  @archive_channel = (msg, _robot) ->
     if msg.match[1]=='#general'
       msg.reply 'cannot archive #general channel'
       return
     if (msg.match[1]=='this')
-      if (msg.envelope.message.user.room == msg.envelope.message.user.name || msg.envelope.message.user.room == 'general')
+      if (msg.envelope.message.user.room == msg.envelope.message.user.name ||
+      msg.envelope.message.user.room == 'general')
         msg.reply 'cannot archive private or general channel'
         return
       channelId = ['', msg.envelope.message.rawMessage.channel]
@@ -35,16 +37,16 @@ module.exports = (robot) ->
       msg.reply 'could not find channel '+msg.match[1]
       return
     channelId = channelId[1]
-    robot.logger.debug 'archiving channel: '+channelId
+    _robot.logger.debug 'archiving channel: '+channelId
     msg.reply 'Yes sir!'
-    archive.archive_channel(robot, msg, channelId)
+    archive.archive_channel(_robot, msg, channelId)
     .then (r) ->
       msg.reply 'done'
-      .catch (e) ->
-        robot.logger.error e
-        msg.reply 'Error: '+e
+    .catch (e) ->
+      _robot.logger.error e
+      msg.reply 'Error: '+e
 
-  robot.respond /admin archive older ([0-9]+)([dDhHmMsS]) ?(.*)/i, (msg) ->
+  @archive_older = (msg, _robot) ->
     room = msg.message.room
     type = 'name'
     seconds = switch
@@ -76,3 +78,15 @@ module.exports = (robot) ->
     .then (r) ->
       robot.logger.debug 'back from Promise', r
       msg.reply 'done, total archived: '+r.totalArchived
+
+  # register hubot enterprise functions
+  robot.enterprise.create {product: 'admin', action: 'archive channel',
+  help: ' <this|#name>- archive specific channel', type: 'respond'},
+  _this.archive_channel
+
+  robot.enterprise.create {product: 'admin',
+  action: 'archive older',
+  extra: '([0-9]+)([dDhHmMsS]) ?(.*)',
+  help: ' <N>(D/H/M/S) (named|tag) <name|tag> or <name|tag>- '+
+  'archive channels older than by name or by topic', type: 'respond'},
+  _this.archive_older

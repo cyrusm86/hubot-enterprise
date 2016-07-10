@@ -8,7 +8,8 @@ In hubot project repo, run:
 
 `npm install hubot-enterprise --save`
 
-Then add **hubot-enterprise** to your `external-scripts.json`:
+Then add **hubot-enterprise** to your `external-scripts.json`, should
+be the **FIRST** in the list:
 
 ```json
 [
@@ -45,3 +46,54 @@ Supported commands:
   * `admin archive channel #channelName`
   * `admin archive channel this` - to archive current channel
   (_cannot archive private chat or #general channel_)
+3. enterprise: show enterprise help
+  * `@bot-name: enterprise`
+
+## Using enterprise with integration
+Example scripts:
+
+- [example.coffee](example/example.coffee)
+- [admin.coffee](src/admin.coffee)
+
+Write your own:
+- Start code file as usual hubot script, add this snippet in the head:
+
+```coffee
+module.exports = (robot) ->
+ if not robot.enterprise
+   robot.logger.error 'hubot-enterprise not present, cannot run'
+   return
+ robot.logger.info 'hubot-test initialized'
+```
+- To register a listener call the following code:
+
+```coffee
+robot.enterprise.create {action: 'create',
+help: 'create ticket', type: 'respond|hear'}, (msg, _robot)->
+  #your code here
+
+_this = @
+@myCallback = (msg, _robot) ->
+  #your code here
+
+robot.enterprise.create {action: 'create',
+help: 'create ticket', type: 'respond|hear'}, _this.myCallback
+```
+- call will look like that `<product> <action>(.*)`
+  - `product` is the suffix of your integration name (`hubot-<product>`)
+- if passed `extra: 'regex string'` then the last part will be replaced with this
+  - `<product> <action><extra_regex>`
+
+## Testing integration with enterprise support
+- install `hubot-enterprise` as dev dependency:
+  - `npm install --save-dev https://github.com/eedevops/hubot-enterprise`
+- test using hubot-test-helper, currently use this fork: https://github.com/eedevops/hubot-test-helper
+  - `npm install --save-dev https://github.com/eedevops/hubot-test-helper`
+- follow the documentation of hubot-test-helper with one change:
+
+  ```coffee
+  # Helper class should be initialized with this:
+  helper = new Helper(['../node_modules/hubot-enterprise/src', <your_module>])
+  ```
+
+
