@@ -96,6 +96,6 @@ help: 'create ticket', type: 'respond|hear'}, _this.myCallback
   helper = new Helper(['../node_modules/hubot-enterprise/src', <your_module>])
   ```
 
-# DISCLAIMER
+## DISCLAIMER
 
 Currently hubot-enterprise support slack platform, other platforms might be added later on.
