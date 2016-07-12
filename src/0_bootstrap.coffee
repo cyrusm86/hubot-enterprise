@@ -37,11 +37,12 @@ module.exports = (robot) ->
     myError = new Error
     trace = myError.stack.split('\n')
     trace.shift()
+    filename = __filename.replace(/[A-Z]:\\/, '').replace(/\\/ig, '/')
     fname = ''
     loop
-      shift = trace.shift()
+      shift = trace.shift().replace(/[A-Z]:\\/, '').replace(/\\/ig, '/')
       fname = /\((.*):/i.exec(shift)[1].split(':')[0]
-      unless fname == __filename
+      unless fname == filename
         break
     fname.match(/\/hubot-(.*?)\//ig).pop().replace(/hubot-|\//g, '')
 
