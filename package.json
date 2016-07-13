@@ -1,51 +1,52 @@
 {
   "name": "hubot-enterprise",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "Hubot middleware and scripts for enterprise",
   "main": "index.coffee",
   "scripts": {
     "test": "grunt test",
     "coffeelint": "coffeelint --reporter jslint -r . > coffee-lint.xml || true",
-	"jslint": "jshint --exclude-path .gitignore --reporter=jslint .> js-lint.xml || true"
+    "jslint": "jshint --exclude-path .gitignore --reporter=jslint .> js-lint.xml || true"
   },
   "repository": {
-  "type": "git",
-  "url": "https://github.com/eedevops/hubot-enterprise"
+    "type": "git",
+    "url": "https://github.com/eedevops/hubot-enterprise"
   },
   "bugs": {
-  "url": "https://github.com/eedevops/hubot-enterprise/issues"
+    "url": "https://github.com/eedevops/hubot-enterprise/issues"
   },
   "keywords": [
     "hubot",
     "hubot-scripts",
     "hubot-enterprise",
-	"enterprise",
+    "enterprise",
     "admin"
   ],
   "dependencies": {
-    "lodash": "^4.6.1",
-    "request": "^2.69.0",
     "bluebird": "^3.3.4",
-    "moment": "^2.13.0"
+    "insight": "^0.8.2",
+    "lodash": "^4.6.1",
+    "moment": "^2.13.0",
+    "request": "^2.69.0"
   },
   "peerDependencies": {
     "hubot": "2.x"
   },
   "devDependencies": {
-   "chai": "^2.1.1",
-   "coffee-script": "1.6.3",
-   "grunt": "^0.4.5",
-   "grunt-cli": "^0.1.13",
-   "grunt-contrib-watch": "~0.6.1",
-   "grunt-mocha-test": "~0.12.7",
-   "grunt-release": "~0.11.0",
-   "hubot-test-helper": "^1.4.4",
-   "hubot": "2.x",
-   "matchdep": "~0.3.0",
-   "mocha": "^2.1.0",
-   "sinon": "^1.13.0",
-   "sinon-chai": "^2.7.0"
- },
+    "chai": "^2.1.1",
+    "coffee-script": "1.6.3",
+    "grunt": "^0.4.5",
+    "grunt-cli": "^0.1.13",
+    "grunt-contrib-watch": "~0.6.1",
+    "grunt-mocha-test": "~0.12.7",
+    "grunt-release": "~0.11.0",
+    "hubot-test-helper": "^1.4.4",
+    "hubot": "2.x",
+    "matchdep": "~0.3.0",
+    "mocha": "^2.1.0",
+    "sinon": "^1.13.0",
+    "sinon-chai": "^2.7.0"
+  },
   "coffeelintConfig": {
     "max_line_length": {
       "limitComments": false
