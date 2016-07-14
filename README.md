@@ -4,21 +4,28 @@ Hubot middleware and scripts for enterprise
 
 ## Installation
 
-In hubot project repo, run:
 
-`npm install eedevops/hubot-enterprise --save`
+**Creating your new bot**
+- `npm install -g coffee-script yo eedevops/generator-hubot-enterprise`
+- `mkdir /path/to/hubot/`
+- `cd /path/to/hubot`
+- `yo hubot-enterprise`
 
-Then add **hubot-enterprise** to your `external-scripts.json`, should
+**adding hubot enterprise to existing bot**
+- `cd /path/to/hubot/`
+- `npm install --save eedevops/hubot-enterprise`
+- Add **hubot-enterprise** to `external-scripts.json`, should
 be the **FIRST** in the list:
 
-```json
-[
-  "hubot-enterprise"
-]
-```
+  ```json
+  [
+    "hubot-enterprise"
+  ]
+  ```
 
 ## configuration
  - Slack Web API Token as `SLACK_APP_TOKEN` environment variable
+ - Hubot slack token as `HUBOT_SLACK_TOKEN` environment variable
 
 ### Slack Web API token generation:
 #### for testing:
