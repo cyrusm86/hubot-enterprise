@@ -39,9 +39,9 @@ describe 'enterprise tests', ->
     @room.destroy()
 
   it 'register respond function', ->
-    @room.user.say('alice', '@hubot test update jj').then =>
+    @room.user.say('alice', '@hubot test update').then =>
       expect(@room.messages).to.eql [
-        [ 'alice', '@hubot test update jj' ],
+        [ 'alice', '@hubot test update' ],
         [ 'hubot', '@alice in test update' ]
       ]
   it 'register hear function', ->

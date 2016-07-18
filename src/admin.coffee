@@ -17,10 +17,10 @@ See the License for the specific language governing permissions and limitations 
 Promise = require 'bluebird'
 
 module.exports = (robot) ->
-  archive = new (require '../lib/archive')(robot.adapterName||'slack')
+  archive = new (require '../lib/archive')(robot)
   _this = @
 
-  @archive_channel = (msg, _robot) ->
+  archive_channel = (msg, _robot) ->
     if msg.match[1]=='#general'
       msg.reply 'cannot archive #general channel'
       return
@@ -39,14 +39,14 @@ module.exports = (robot) ->
     channelId = channelId[1]
     _robot.logger.debug 'archiving channel: '+channelId
     msg.reply 'Yes sir!'
-    archive.archive_channel(_robot, msg, channelId)
+    archive.archive_channel(msg, channelId)
     .then (r) ->
       msg.reply 'done'
     .catch (e) ->
-      _robot.logger.error e
+      _robot.logger.debug e
       msg.reply 'Error: '+e
 
-  @archive_older = (msg, _robot) ->
+  archive_older = (msg, _robot) ->
     room = msg.message.room
     type = 'name'
     seconds = switch
@@ -74,19 +74,22 @@ module.exports = (robot) ->
       return
     msg.reply 'archiving channels with pattern: "'+patterns.join('", "')+
       '" older than '+msg.match[1]+msg.match[2]+' by '+type
-    archive.archive_old(robot, msg, seconds, patterns, room, type)
+    archive.archive_old(msg, seconds, patterns, room, type)
     .then (r) ->
       robot.logger.debug 'back from Promise', r
       msg.reply 'done, total archived: '+r.totalArchived
+    .catch (e) ->
+      _robot.logger.debug e
+      msg.reply 'Error: '+e
 
   # register hubot enterprise functions
   robot.enterprise.create {product: 'admin', action: 'archive channel',
   help: ' <this|#name>- archive specific channel', type: 'respond'},
-  _this.archive_channel
+  archive_channel
 
   robot.enterprise.create {product: 'admin',
   action: 'archive older',
   extra: '([0-9]+)([dDhHmMsS]) ?(.*)',
   help: ' <N>(D/H/M/S) (named|tag) <name|tag> or <name|tag>- '+
   'archive channels older than by name or by topic', type: 'respond'},
-  _this.archive_older
+  archive_older

@@ -17,10 +17,10 @@ See the License for the specific language governing permissions and limitations 
 # admin actions for Slack
 
 Querystring = require 'querystring'
-SlackApi = require './slack_web_api'
+SlackApi = require './libs/slack_web_api'
 Promise = require 'bluebird'
 _ = require 'lodash'
-class AdminExt
+class Adapter
   constructor: (apiToken = process.env.SLACK_APP_TOKEN) ->
     @apiToken = apiToken
 
@@ -66,4 +66,4 @@ class AdminExt
     .then (r) ->
       return r.channel
 
-module.exports = AdminExt
+module.exports = Adapter

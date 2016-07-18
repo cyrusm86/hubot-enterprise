@@ -15,8 +15,8 @@ See the License for the specific language governing permissions and limitations 
 
 path = require('path')
 Insight = require('insight')
-
 pkg = require('../package.json')
+Adapter =
 insight = new Insight(
   trackingCode: 'UA-80724671-1'
   pkg: pkg)
@@ -26,21 +26,9 @@ insight.track 'HE', 'start'
 
 module.exports = (robot) ->
   robot.enterprise = {}
+  robot.enterprise.adapter = new (require __dirname+
+    '/../lib/adapter_core')(robot)
   robot.enterprise.help = []
-
-  # register a listener function with hubot-enterprise
-  #
-  # info: list of the function info:
-  #  product: product name- OPTIONAL (lib will determin product by itself)
-  #  action: action to prerform
-  #  type: hear/respond
-  #  extra: extra regex (after the first 2), default: " (.*)"
-  #  help: help string
-  # callback: function to run
-  #
-  # will register function with the following regex:
-  # /#{info.product} #{info.action} (.*)/i
-
 
   find_integration_name = ->
     myError = new Error
@@ -55,14 +43,27 @@ module.exports = (robot) ->
         break
     fname.match(/\/hubot-(.*?)\//ig).pop().replace(/hubot-|\//g, '')
 
+  # register a listener function with hubot-enterprise
+  #
+  # info: list of the function info:
+  #  product: product name- OPTIONAL (lib will determin product by itself)
+  #  action: action to prerform
+  #  type: hear/respond
+  #  extra: extra regex (after the first 2), default: " (.*)"
+  #  help: help string
+  # callback: function to run
+  #
+  # will register function with the following regex:
+  # /#{info.product} #{info.action} (.*)/i
+
   robot.enterprise.create = (info, callback) ->
     integration_name = find_integration_name()
     info.product = info.product || integration_name
-    extra = info.extra||"(.*)"
+    extra = if info.extra then " "+info.extra else "[ ]?(.*)?"
     if !info.type || (info.type != 'hear')
       info.type = 'respond'
     robot.enterprise.help.push(info)
-    re = new RegExp("#{info.product} #{info.action} #{extra}", 'i')
+    re = new RegExp("#{info.product} #{info.action}#{extra}", 'i')
     robot[info.type] re, (msg) ->
       callback(msg, robot)
 

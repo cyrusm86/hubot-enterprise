@@ -35,7 +35,9 @@ describe 'hubot-admin tests', ->
       expect(@room.messages).to.eql [
         [ 'alice', '@hubot admin archive older 5s' ],
         [ 'hubot', '@alice archiving channels with pattern: "advantage", '+
-          '"incident" older than 5s by name' ]
+          '"incident" older than 5s by name' ],
+        ['hubot', '@alice Error: command channelList not available for '+
+          'adapter null']
       ]
 
   it 'admin archive older 5s named JJ or BB or DDDD', ->
