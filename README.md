@@ -57,6 +57,8 @@ Supported commands:
   * `@bot-name: enterprise`
 
 ## Using enterprise with integration
+**For more information, please reffer [hubot-enterprise wiki](https://github.com/eedevops/hubot-enterprise/wiki)**
+
 Example scripts:
 
 - [example.coffee](example/example.coffee)
@@ -93,9 +95,9 @@ help: 'create ticket', type: 'respond|hear'}, _this.myCallback
 
 ## Testing integration with enterprise support
 - install `hubot-enterprise` as dev dependency:
-  - `npm install --save-dev https://github.com/eedevops/hubot-enterprise`
+  - `npm install --save-dev eedevops/hubot-enterprise`
 - test using hubot-test-helper, currently use this fork: https://github.com/eedevops/hubot-test-helper
-  - `npm install --save-dev https://github.com/eedevops/hubot-test-helper`
+  - `npm install --save-dev eedevops/hubot-test-helper`
 - follow the documentation of hubot-test-helper with one change:
 
   ```coffee
