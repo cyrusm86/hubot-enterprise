@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and limitations under the License.
 ###
 
+# adapter administration script
 
 Promise = require 'bluebird'
 
@@ -25,23 +26,17 @@ module.exports = (robot) ->
       msg.reply 'cannot archive #general channel'
       return
     if (msg.match[1]=='this')
-      if (msg.envelope.message.user.room == msg.envelope.message.user.name ||
-      msg.envelope.message.user.room == 'general')
-        msg.reply 'cannot archive private or general channel'
-        return
-      channelId = ['', msg.envelope.message.rawMessage.channel]
+      channel = ['', msg.envelope.message.room]
     else if (!msg.match[1].startsWith('#'))
       msg.reply 'channel name should start with #'
       return
-    else if (!(channelId = /<\#(.*)>/i.exec(msg.envelope.message.rawText)))
+    else if (!(channel = /(#[^\s]+)/i.exec(msg.envelope.message.text)))
       msg.reply 'could not find channel '+msg.match[1]
       return
-    channelId = channelId[1]
-    _robot.logger.debug 'archiving channel: '+channelId
+    channel = channel[1]
+    _robot.logger.debug 'archiving channel: '+channel
     msg.reply 'Yes sir!'
-    archive.archive_channel(msg, channelId)
-    .then (r) ->
-      msg.reply 'done'
+    archive.archive_channel(msg, channel)
     .catch (e) ->
       _robot.logger.debug e
       msg.reply 'Error: '+e

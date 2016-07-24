@@ -13,6 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and limitations under the License.
 ###
 
+# Bootstraping hubot-enterprise
+# adding enterprise functions to robot object
+
 path = require('path')
 Insight = require('insight')
 pkg = require('../package.json')
@@ -29,6 +32,13 @@ module.exports = (robot) ->
   robot.enterprise.adapter = new (require __dirname+
     '/../lib/adapter_core')(robot)
   robot.enterprise.help = []
+
+  robot.enterprise.commons = {
+    no_such_integration: (product) ->
+      return "there is no such integration #{product}"
+    help_msg: (content) ->
+      return "help for hubot enterprise:"+content
+  }
 
   find_integration_name = ->
     myError = new Error
@@ -76,8 +86,8 @@ module.exports = (robot) ->
         "#{elem.product} #{elem.action}: #{elem.help}"
     if !res
       product = if product then product.trim() else ""
-      res = "\nthere is no such integration #{product}"
-    res = "enterprise help"+res
+      res = "\n"+robot.enterprise.commons.no_such_integration(product)
+    res = robot.enterprise.commons.help_msg(res)
     return res
 
   # listener for help message

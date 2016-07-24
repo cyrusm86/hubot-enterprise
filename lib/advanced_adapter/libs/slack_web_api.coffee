@@ -12,6 +12,8 @@ See the License for the specific language governing permissions and limitations 
 
 
 # Copied from Botkit
+# api wrapper for slack
+
 request = require 'request'
 _ = require('lodash')
 Promise = require 'bluebird'
@@ -19,6 +21,10 @@ Promise = require 'bluebird'
 slack_api =
   api_url: 'https://slack.com/api/'
   callAPI: (command, options) ->
+    # reject if no token provided
+    if not options.token
+      return Promise.reject('No token provided, please provide a '+
+        'token in SLACK_APP_TOKEN')
     new Promise (resolve, reject)->
       request.post(slack_api.api_url + command, form: options,
       (err, reponse, body)->

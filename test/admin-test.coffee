@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and limitations 
 ###
 
 # change log level to eliminate hubot warning about copoyright style
-process.env.HUBOT_LOG_LEVEL='error'
 
 Helper = require('hubot-test-helper')
 chai = require 'chai'
@@ -73,5 +72,6 @@ describe 'hubot-admin tests', ->
     @room.user.say('bob', '@hubot admin archive channel #some').then =>
       expect(@room.messages).to.eql [
         ['bob', '@hubot admin archive channel #some']
-        ['hubot', '@bob could not find channel #some']
+        ['hubot', '@bob Yes sir!']
+        ['hubot', '@bob Error: command channelInfo not available for adapter null']
       ]

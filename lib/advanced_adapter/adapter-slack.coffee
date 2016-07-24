@@ -20,36 +20,57 @@ Querystring = require 'querystring'
 SlackApi = require './libs/slack_web_api'
 Promise = require 'bluebird'
 _ = require 'lodash'
+
+# slack adapter
 class Adapter
+  # constructor
+  # apiToken: optional api token, should be in env
   constructor: (apiToken = process.env.SLACK_APP_TOKEN) ->
     @apiToken = apiToken
 
+  # set channel topic
+  # channelId: id or name of the channel
+  # topic: string for the topic
   setTopic: (channelId, topic)->
     opts =
       token: @apiToken
-      channel: channelId
       topic: topic
-    SlackApi.channels.setTopic opts
+    return @channelNameToId(channelId)
+    .then (r) ->
+      opts.channel = r
+      return SlackApi.channels.setTopic opts
 
+  # join (self) to channel
+  # channelName: channel Name
   join: (channelName) ->
     opts =
       token: @apiToken
       name: channelName
     SlackApi.channels.join opts
 
+  # archive channel
+  # channelId: id or name of the channel
   archive: (channelId) ->
-    opts =
-      token: @apiToken
-      channel: channelId
-    SlackApi.channels.archive opts
+    opts = {token: @apiToken}
+    return @channelNameToId(channelId)
+    .then (r) ->
+      opts.channel = r
+      return SlackApi.channels.archive opts
 
+  # rename channel
+  # channelId: id or name of the channel
+  # channelName: new name to channel
   rename: (channelId, channelName) ->
     opts =
       token: @apiToken
-      channel: channelId
       name: channelName
-    SlackApi.channels.rename opts
+    return @channelNameToId(channelId)
+    .then (r) ->
+      opts.channel = r
+      return SlackApi.channels.rename opts
 
+  # list channels
+  # excludeArchived: exclude archived channels
   channelList: (excludeArchived) ->
     opts =
       token: @apiToken
@@ -58,12 +79,39 @@ class Adapter
     .then (r) ->
       return r.channels
 
+  # get info for specific channel
+  # channelId: id or name of the channel
   channelInfo: (channelId) ->
-    opts =
-      token: @apiToken
-      channel: channelId
-    return SlackApi.channels.info(opts)
+    opts = {token: @apiToken}
+    return @channelNameToId(channelId)
+    .then (r) ->
+      opts.channel = r
+      return SlackApi.channels.info(opts)
     .then (r) ->
       return r.channel
+
+  # get channel name or id, if prefixed with # try to translate to channel ID
+  # if not: return as is (assuming its channel ID)
+  channelNameToId: (channel) ->
+    if not channel.startsWith('#')
+      # return resolved promise with channel ID
+      return Promise.resolve(channel)
+    # assume channel name and try to resolve
+    return @getChannelID(channel)
+
+  # get channel NAME and translating to ID
+  getChannelID: (channel) ->
+    # return promise that resolving the channel name to channel ID
+    _this = @
+    return new Promise (resolve, reject) ->
+      return _this.channelList(true)
+      .then (r) ->
+        for ch in r
+          if ch.name == channel.substr(1)
+            console.log("#{channel} is #{ch.id}")
+            return resolve(ch.id)
+        return reject("could not find channel #{channel}")
+
+
 
 module.exports = Adapter

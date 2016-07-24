@@ -13,8 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and limitations under the License.
 ###
 
-# change log level to eliminate hubot warning about copoyright style
-process.env.HUBOT_LOG_LEVEL='error'
 
 Helper = require('hubot-test-helper')
 chai = require 'chai'
@@ -75,7 +73,7 @@ describe 'enterprise tests', ->
     @room.user.say('alice', '@hubot enterprise').then =>
       expect(@room.messages).to.eql [
         [ 'alice', '@hubot enterprise' ],
-        [ 'hubot', '@alice enterprise help\n'+
+        [ 'hubot', '@alice help for hubot enterprise:\n'+
         '@hubot test update: update ticket\n'+
         'test read: read ticket\n'+
         '@hubot foo read: read ticket' ]
@@ -85,7 +83,7 @@ describe 'enterprise tests', ->
     @room.user.say('alice', '@hubot enterprise foo').then =>
       expect(@room.messages).to.eql [
         [ 'alice', '@hubot enterprise foo' ],
-        [ 'hubot', '@alice enterprise help\n'+
+        [ 'hubot', '@alice help for hubot enterprise:\n'+
         '@hubot foo read: read ticket' ]
       ]
 
@@ -93,6 +91,6 @@ describe 'enterprise tests', ->
     @room.user.say('alice', '@hubot enterprise bar').then =>
       expect(@room.messages).to.eql [
         [ 'alice', '@hubot enterprise bar' ],
-        [ 'hubot', '@alice enterprise help\n'+
+        [ 'hubot', '@alice help for hubot enterprise:\n'+
         'there is no such integration bar' ]
       ]

@@ -14,6 +14,10 @@ See the License for the specific language governing permissions and limitations 
 ###
 
 
+# core of advanced API adapter
+# detering which adapter to load
+# pass the request if function exists and user allowed to do so
+
 fs = require 'fs'
 Promise = require 'bluebird'
 adapters_path = __dirname+'/advanced_adapter/adapter-'
