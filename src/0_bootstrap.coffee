@@ -19,6 +19,7 @@ See the License for the specific language governing permissions and limitations 
 path = require('path')
 Insight = require('insight')
 pkg = require('../package.json')
+
 Adapter =
 insight = new Insight(
   trackingCode: 'UA-80724671-1'

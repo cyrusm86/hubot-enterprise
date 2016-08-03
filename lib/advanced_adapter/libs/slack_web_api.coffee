@@ -261,9 +261,6 @@ slack_api =
     setPresence: (options) ->
       slack_api.callAPI('users.setPresence',options)
 
-
-
-
 # Example:
 #   options =
 #     token: 'xoxp-25470835060-....'

@@ -1,6 +1,6 @@
 {
   "name": "hubot-enterprise",
-  "version": "0.0.12",
+  "version": "0.1.0",
   "description": "Hubot middleware and scripts for enterprise",
   "main": "index.coffee",
   "repository": {
@@ -22,7 +22,9 @@
     "insight": "^0.8.2",
     "lodash": "^4.6.1",
     "moment": "^2.13.0",
-    "request": "^2.69.0"
+    "request": "^2.69.0",
+    "easy-table": "^1.0.0",
+    "nock": "^8.0.0"
   },
   "peerDependencies": {
     "hubot": "2.x"

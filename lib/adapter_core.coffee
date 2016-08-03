@@ -21,6 +21,7 @@ See the License for the specific language governing permissions and limitations 
 fs = require 'fs'
 Promise = require 'bluebird'
 adapters_path = __dirname+'/advanced_adapter/adapter-'
+table = require 'easy-table'
 
 #list of advanced commands: with elevated permissions
 advanced_commands = []
@@ -57,7 +58,7 @@ class AdapterCore
     _this = @
     _robot = @robot
     _adapter = @adapter
-    return new Promise (resolve, reject)->
+    return new Promise (resolve, reject) ->
       _robot.logger.debug "Adapter CORE: request to exec #{command} with "+
         "params: ", params
       # reject promise  if no adapter (can be cougnt using .catch function)
@@ -75,5 +76,93 @@ class AdapterCore
       else
         # resolve if all ok, use .apply to expand arr of params to function
         resolve(_adapter[command].apply(_adapter, params))
+  # table formatter, return formatted table surrounded by platform quotation marks
+  # data: can be one of the following:
+  #   2d array, when the first is table header
+  #   array of key: value objects when the each key will be table header
+  # example 2d: getTable([['name', 'email'], ['john', 'john@acme.com'], ...])
+  # exemply obj: getTable([{name: 'john', email: 'john@acme.com'}, {name:....}])
+  getTable: (data) ->
+    t = new table
+    quote =
+      start: ''
+      end: ''
+    # set start and end quotes by platform (if any)
+    if (@adapter.quote)
+      quote.start = @adapter.quote.start || ''
+      quote.end = @adapter.quote.end || ''
+    if (data[0] instanceof Array)
+      # run the array, skip the first because it's the table header
+      for el in data.slice(1)
+        for i in [0 ... el.length]
+          t.cell(data[0][i], el[i])
+        t.newRow()
+    # TODO: is there any chance in this conditional or within this loop to add
+    #   some validation to make sure that the format of
+    #   the array items is the one that we expect?
+    else
+      for el in data
+        for key of el
+          t.cell(key, el[key])
+        t.newRow()
+    return quote.start+t.toString()+quote.end
+
+  # advanced message api
+  # msg: hubot message object or custom message
+  #   To send out of conversation context (when no msg object):
+  #   user: username to send to (in case of reply=true)
+  #   room: room NAME prefixed by # --or-- username prefixed by @ for DM
+  # message: message object to be sent or str (for basic)
+  #   text: text message
+  #   color: hex color representation or 'good/warning/danger'
+  #   title: message title
+  #   subtitle: message subtitle
+  #   link: url
+  #   image: url
+  #   footer: string
+  #   footer icon: url
+  # reply: true/false- reply (assign username prefix) in case of public room
+  message: (msg, message, reply) ->
+    # initialize opt
+    opt =
+      user: msg.user
+      room: msg.room
+      custom_msg: !msg.envelope
+    # if not custom message, try to get from msg.envelope (fallback to custom)
+    if not opt.custom_msg
+      if msg.envelope.user
+        opt.user = msg.envelope.user.name || opt.user
+      opt.room = msg.envelope.room || opt.room
+    if opt.custom_msg && !opt.room
+      throw new Error "No room specified in custom message"
+    if @adapter.customMessage
+      return @adapter.customMessage(@robot, msg, message, opt, reply)
+    return @messageFallback(msg, message, opt, reply)
+
+  # fallback to message: used in case that no adapter or no special message in adapter
+  # implements @message api
+  messageFallback: (msg, message, opt, reply) ->
+    toSend = []
+    if opt.custom_msg
+      @robot.logger.error 'Cannot send special custom messages '+
+        '(robot.enterprise.message)'
+    if typeof message == 'string'
+      toSend = message
+    else
+      if message.title
+        toSend.push(message.title)
+      if message.text
+        toSend.push(message.text)
+      if message.link
+        if message.link_desc
+          toSend.push(message.link_desc+": "+message.link)
+        else
+          toSend.push(message.link)
+      if msg.footer
+        toSend.push(message.footer)
+      toSend = toSend.join('\n')
+    if (reply)
+      return msg.respond(toSend)
+    return msg.send toSend
 
 module.exports = AdapterCore

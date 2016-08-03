@@ -77,8 +77,7 @@ class Archive
       channels = _this.sort_channels(msg, r, thisChannel, channelPatterns,
         type)
       return Promise.map(channels, (channel) ->
-        _robot.logger.debog
-        create_time = Math.floor(now - channel.created)
+        create_time = now - channel.created
         _robot.logger.debug 'Channel: '+channel.name+' Create elapsed time: '+
           create_time+' created time: '+channel.created
         if create_time > seconds
@@ -94,5 +93,7 @@ class Archive
         r.totalArchived = totalArchived
         return r
       .catch (r) ->
-        _robot.logger.debug r
+        _robot.logger.debug 'ERROR:'+r
+        r.totalArchived = totalArchived
+        return r
 module.exports = Archive

@@ -44,11 +44,15 @@ module.exports = (robot) ->
   archive_older = (msg, _robot) ->
     room = msg.message.room
     type = 'name'
+    timeType = msg.match[2].toLowerCase()
     seconds = switch
-      when msg.match[2]=='d' then msg.match[1]*86400
-      when msg.match[2]=='h' then msg.match[1]*3600
-      when msg.match[2]=='m' then msg.match[1]*60
-      when msg.match[2]=='s' then msg.match[1]
+      when timeType=='d' then msg.match[1]*86400
+      when timeType=='h' then msg.match[1]*3600
+      when timeType=='m' then msg.match[1]*60
+      when timeType=='s' then msg.match[1]
+      else
+        msg.match[1]
+        timeType='s'
     # currently hardcoded patterns
     if (msg.match[3] &&
     (pattern_option = /(named|topic) (.*)/i.exec(msg.match[3])))
@@ -68,7 +72,7 @@ module.exports = (robot) ->
       msg.reply 'no patterns to archive :disappointed:'
       return
     msg.reply 'archiving channels with pattern: "'+patterns.join('", "')+
-      '" older than '+msg.match[1]+msg.match[2]+' by '+type
+      '" older than '+msg.match[1]+timeType+' by '+type
     archive.archive_old(msg, seconds, patterns, room, type)
     .then (r) ->
       robot.logger.debug 'back from Promise', r
