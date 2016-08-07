@@ -181,15 +181,15 @@ class Adapter
         return Promise.map(userList, (user) ->
           opts.user = user
           return SlackApi.channels.kick(opts)
-           .catch (e) ->
-             if (e == 'cant_kick_self')
-               return _this.leave(channel)
+          .catch (e) ->
+            if (e == 'cant_kick_self')
+              return _this.leave(channel)
         )
 
   # create new channel by name
   # channelName: name of the new channel
   createChannel: (channelName) ->
-   opts =
+    opts =
       token: @apiToken
       name: channelName
     return SlackApi.channels.create(opts)
@@ -214,7 +214,7 @@ class Adapter
         else if (_.includes(users, user.id))
           users.splice(users.indexOf(user.id), 1)
         else
-          continue;
+          continue
         res.push(user.id)
       return res
 

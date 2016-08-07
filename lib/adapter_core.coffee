@@ -145,7 +145,7 @@ class AdapterCore
     toSend = []
     if opt.custom_msg
       @robot.logger.error 'Cannot send special custom messages '+
-        '(robot.enterprise.message)'
+        '(robot.e.message)'
     if typeof message == 'string'
       toSend = message
     else
