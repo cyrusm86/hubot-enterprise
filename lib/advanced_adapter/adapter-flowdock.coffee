@@ -67,7 +67,7 @@ class Adapter
         else if (_.includes(channels, channel.parameterized_name))
           channels.splice(channels.indexOf(channel.parameterized_name), 1)
         else
-          continue;
+          continue
         res.push(channel.id)
       return res
 
@@ -87,7 +87,7 @@ class Adapter
         else if (_.includes(users, user.id))
           users.splice(users.indexOf(user.id), 1)
         else
-          continue;
+          continue
         res.push(user.id)
       return res
 
@@ -128,8 +128,8 @@ class Adapter
       return msg.respond(toSend)
     # sending the message
     if (reply && (opt.user && opt.room[0] !='@'))
-        userText = if (opt.user[0] != '@') then '@'+opt.user else opt.user
-        toSend = userText+", "+toSend
+      userText = if (opt.user[0] != '@') then '@'+opt.user else opt.user
+      toSend = userText+", "+toSend
     if opt.room[0] == '#'
       # resolve channel name to id
       new Promise (resolve, reject) ->

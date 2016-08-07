@@ -73,5 +73,6 @@ describe 'hubot-admin tests', ->
       expect(@room.messages).to.eql [
         ['bob', '@hubot admin archive channel #some']
         ['hubot', '@bob Yes sir!']
-        ['hubot', '@bob Error: command channelInfo not available for adapter null']
+        ['hubot', '@bob Error: command channelInfo not available '+
+          'for adapter null']
       ]
