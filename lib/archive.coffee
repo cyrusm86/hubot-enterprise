@@ -22,7 +22,7 @@ ARCH_PREFIX = 'ARCH-'
 
 class Archive
   constructor: (robot) ->
-    @adapter = robot.enterprise.adapter
+    @adapter = robot.e.adapter
     @robot = robot
 
   sort_channels: (msg, channels, current, regex, type) ->
