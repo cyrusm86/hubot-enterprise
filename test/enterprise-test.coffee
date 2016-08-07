@@ -24,13 +24,13 @@ helper = new Helper('../src/0_bootstrap.coffee')
 describe 'enterprise tests', ->
   beforeEach ->
     @room = helper.createRoom()
-    @room.robot.enterprise.create {product: 'test', action: 'update',
+    @room.robot.e.create {product: 'test', action: 'update',
     help: 'update ticket', type: 'respond'}, (msg, _robot)->
       msg.reply 'in test update'
-    @room.robot.enterprise.create {product: 'test', action: 'read',
+    @room.robot.e.create {product: 'test', action: 'read',
     help: 'read ticket', type: 'hear'}, (msg, _robot)->
       msg.reply 'in test read'
-    @room.robot.enterprise.create {product: 'foo', action: 'read',
+    @room.robot.e.create {product: 'foo', action: 'read',
     help: 'read ticket', type: 'respond'}, (msg, _robot)->
       msg.reply 'in foo read'
   afterEach ->
@@ -50,7 +50,7 @@ describe 'enterprise tests', ->
       ]
 
   it 'register default project naming', ->
-    @room.robot.enterprise.create {action: 'read',
+    @room.robot.e.create {action: 'read',
     help: 'read ticket', type: 'hear'}, (msg, _robot)->
       msg.reply 'in enterprise read'
     @room.user.say('alice', 'enterprise read jj').then =>
@@ -60,7 +60,7 @@ describe 'enterprise tests', ->
       ]
 
   it 'register default listener option (respond)', ->
-    @room.robot.enterprise.create {product: 'bar', action: 'read',
+    @room.robot.e.create {product: 'bar', action: 'read',
     help: 'read ticket'}, (msg, _robot)->
       msg.reply 'in foo read'
     @room.user.say('alice', '@hubot bar read jj').then =>
@@ -93,4 +93,15 @@ describe 'enterprise tests', ->
         [ 'alice', '@hubot enterprise bar' ],
         [ 'hubot', '@alice help for hubot enterprise:\n'+
         'there is no such integration bar' ]
+      ]
+      
+  # test for backward compatibility
+  it 'check backward compatibility for robot.enterprise', ->
+    @room.robot.enterprise.create {product: 'foo2', action: 'read',
+    help: 'read ticket', type: 'respond'}, (msg, _robot)->
+      msg.reply 'in foo2 read'
+    @room.user.say('alice', '@hubot foo2 read').then =>
+      expect(@room.messages).to.eql [
+        [ 'alice', '@hubot foo2 read' ],
+        [ 'hubot', '@alice in foo2 read' ]
       ]

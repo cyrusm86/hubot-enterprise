@@ -26,23 +26,23 @@ module.exports = (robot) ->
   'enterprise is present'
 
   #register some functions
-  robot.enterprise.create {action: 'create',
+  robot.e.create {action: 'create',
   help: 'create ticket', type: 'respond',
-  extra: '([0-9]+)([dDhHmMsS]) ?(.*)',}, (msg, _robot)->
-    _robot.logger.debug  'in test create'
+  extra: '([0-9]+)([dDhHmMsS]) ?(.*)',}, (msg)->
+    robot.logger.debug  'in test create'
     msg.reply 'in test create'
 
-  robot.enterprise.create {action: 'update',
-  help: 'update ticket', type: 'hear'}, (msg, _robot)->
-    _robot.logger.debug  'in test update'
+  robot.e.create {action: 'update',
+  help: 'update ticket', type: 'hear'}, (msg)->
+    robot.logger.debug  'in test update'
     msg.reply 'in test update'
 
-  robot.enterprise.create {product: 'test', action: 'read',
-  help: 'read ticket', type: 'respond'}, (msg, _robot)->
-    _robot.logger.debug  'in test read'
+  robot.e.create {product: 'test', action: 'read',
+  help: 'read ticket', type: 'respond'}, (msg)->
+    robot.logger.debug  'in test read'
     msg.reply 'in test read'
 
-  robot.enterprise.create {product: 'test', action: 'delete',
-  help: 'delete ticket', type: 'respond'}, (msg, _robot)->
-    _robot.logger.debug  'in test delete'
+  robot.e.create {product: 'test', action: 'delete',
+  help: 'delete ticket', type: 'respond'}, (msg)->
+    robot.logger.debug  'in test delete'
     msg.reply 'in test delete'

@@ -29,12 +29,12 @@ insight.optOut = process.env.HUBOT_HE_OPT_OUT || false
 insight.track 'HE', 'start'
 
 module.exports = (robot) ->
-  robot.enterprise = {}
-  robot.enterprise.adapter = new (require __dirname+
+  robot.e = {}
+  robot.e.adapter = new (require __dirname+
     '/../lib/adapter_core')(robot)
-  robot.enterprise.help = []
+  robot.e.help = []
 
-  robot.enterprise.commons = {
+  robot.e.commons = {
     no_such_integration: (product) ->
       return "there is no such integration #{product}"
     help_msg: (content) ->
@@ -67,30 +67,33 @@ module.exports = (robot) ->
   # will register function with the following regex:
   # /#{info.product} #{info.action} (.*)/i
 
-  robot.enterprise.create = (info, callback) ->
+  robot.e.create = (info, callback) ->
     integration_name = find_integration_name()
     info.product = info.product || integration_name
     extra = if info.extra then " "+info.extra else "[ ]?(.*)?"
     if !info.type || (info.type != 'hear')
       info.type = 'respond'
-    robot.enterprise.help.push(info)
+    robot.e.help.push(info)
     re = new RegExp("#{info.product} #{info.action}#{extra}", 'i')
     robot[info.type] re, (msg) ->
       callback(msg, robot)
 
   # return enterprise help to string
-  robot.enterprise.show_help = (product) ->
+  robot.e.show_help = (product) ->
     res = ""
-    for elem in robot.enterprise.help
+    for elem in robot.e.help
       if !product || elem.product == product.trim()
         res+="\n"+(if elem.type == "respond" then "@#{robot.name} " else "" )+
         "#{elem.product} #{elem.action}: #{elem.help}"
     if !res
       product = if product then product.trim() else ""
-      res = "\n"+robot.enterprise.commons.no_such_integration(product)
-    res = robot.enterprise.commons.help_msg(res)
+      res = "\n"+robot.e.commons.no_such_integration(product)
+    res = robot.e.commons.help_msg(res)
     return res
 
   # listener for help message
   robot.respond /enterprise(.*)/i, (msg) ->
-    msg.reply robot.enterprise.show_help(msg.match[1])
+    msg.reply robot.e.show_help(msg.match[1])
+
+  # robot.enterprise as alias to robot.e for backward compatibility
+  robot.enterprise = robot.e
