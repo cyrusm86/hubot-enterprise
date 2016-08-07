@@ -15,12 +15,14 @@ See the License for the specific language governing permissions and limitations 
 
 class Channel
   # constructor accepts full user names
-  constructor: (id = '', name = '', nice_name = '', date_created = '',
+  constructor: (id = '', name = '', nice_name = '', created = '',
   topic = '') ->
+    console.log('constructing channel')
     @id = id
     @name = name
     @nice_name = nice_name
-    @date_created = date_created
     @topic = topic
+    # convert time to timestamp
+    @created = new Date(created).getTime() || '';
 
 module.exports = Channel

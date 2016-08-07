@@ -113,9 +113,8 @@ class Adapter
     return SlackApi.channels.list(opts)
     .then (r) ->
       for channel in r.channels
-        ret.push(Channel(channel.id, channel.name, channel.name,
-          channel.created, topic.value))
-      console.log(ret)
+        ret.push(new Channel(channel.id, channel.name, channel.name,
+          channel.created, channel.topic.value))
       return ret
 
   # get info for specific channel
@@ -129,7 +128,7 @@ class Adapter
     .then (r) ->
       channel = r.channel
       return new Channel(channel.id, channel.name, channel.name,
-        channel.created, topic.value)
+        channel.created, channel.topic.value)
 
   # create and invite to channel
   # channelName: name of the new channel

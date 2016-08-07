@@ -18,6 +18,7 @@ See the License for the specific language governing permissions and limitations 
 
 request = require 'request'
 Promise = require 'bluebird'
+Channel = require './libs/channel'
 Querystring = require 'querystring'
 _ = require 'lodash'
 class Adapter
@@ -43,11 +44,26 @@ class Adapter
           reject(err)
       )
 
+  # channel info
+  channelInfo: (channelId) ->
+    return @callAPI('flows/find', 'get', {id: channelId})
+    .then (r) ->
+      return new Channel(r.id, r.parameterized_name, r.name,
+        r.sources[0].created_at, r.description)
+
   # list all channels
   channelList: (excludeArchived) ->
+    _this = @
     return @callAPI('flows', 'get')
     .then (r) ->
-      return r
+      return Promise.map(r, (channel) ->
+        return _this.channelInfo(channel.id)
+        .then (r) ->
+          return r
+      )
+      .then (r) ->
+        return r
+
 
   # get list of users
   usersList: () ->
