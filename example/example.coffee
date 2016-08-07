@@ -16,7 +16,7 @@ See the License for the specific language governing permissions and limitations 
 module.exports = (robot) ->
 
   #check if hubot-enterprise is loaded
-  if not robot.enterprise
+  if not robot.e
     robot.logger.error 'hubot-enterprise not present, cannot run'
     robot.send room: 'general', '@channel ERROR: Cannot '+
     'initialize hubot-test module, hubot-enterprise is not installed'
