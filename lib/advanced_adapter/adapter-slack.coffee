@@ -18,6 +18,7 @@ See the License for the specific language governing permissions and limitations 
 
 Querystring = require 'querystring'
 SlackApi = require './libs/slack_web_api'
+Channel = require './libs/channel'
 Promise = require 'bluebird'
 _ = require 'lodash'
 
@@ -105,12 +106,16 @@ class Adapter
   # list channels
   # excludeArchived: exclude archived channels
   channelList: (excludeArchived) ->
+    ret = []
     opts =
       token: @apiToken
       exclude_archived: excludeArchived
     return SlackApi.channels.list(opts)
     .then (r) ->
-      return r.channels
+      for channel in r.channels
+        ret.push(new Channel(channel.id, channel.name, channel.name,
+          channel.created, channel.topic.value))
+      return ret
 
   # get info for specific channel
   # channelId: id or name of the channel
@@ -121,7 +126,9 @@ class Adapter
       opts.channel = r
       return SlackApi.channels.info(opts)
     .then (r) ->
-      return r.channel
+      channel = r.channel
+      return new Channel(channel.id, channel.name, channel.name,
+        channel.created, channel.topic.value)
 
   # create and invite to channel
   # channelName: name of the new channel

@@ -29,7 +29,7 @@ class Archive
     ret = []
     type = type || 'name'
     for channel in channels
-      to_test = if (type == 'name') then channel.name else channel.topic.value
+      to_test = if (type == 'name') then channel.name else channel.topic
       if regex.test(to_test) && channel.name!=current
         @robot.logger.debug to_test
         ret.push channel
