@@ -17,7 +17,6 @@ class Channel
   # constructor accepts full user names
   constructor: (id = '', name = '', nice_name = '', created = '',
   topic = '') ->
-    console.log('constructing channel')
     @id = id
     @name = name
     @nice_name = nice_name
