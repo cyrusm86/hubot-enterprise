@@ -18,6 +18,7 @@ See the License for the specific language governing permissions and limitations 
 
 Querystring = require 'querystring'
 SlackApi = require './libs/slack_web_api'
+User = require './libs/user'
 Channel = require './libs/channel'
 Promise = require 'bluebird'
 _ = require 'lodash'
@@ -208,8 +209,8 @@ class Adapter
         # (case sensitive!)
         if (_.includes(users, user.name))
           users.splice(users.indexOf(user.name), 1)
-        else if (_.includes(users, user.profile.email))
-          users.splice(users.indexOf(user.profile.email), 1)
+        else if (_.includes(users, user.email))
+          users.splice(users.indexOf(user.email), 1)
         else if (_.includes(users, user.id))
           users.splice(users.indexOf(user.id), 1)
         else
@@ -219,11 +220,15 @@ class Adapter
 
   # get list of users
   usersList: () ->
+    ret = []
     opts =
       token: @apiToken
     return SlackApi.users.list(opts)
     .then (r) ->
-      return r.members
+      for user in r.members
+        ret.push(new User(user.id, user.name, user.profile.email,
+          user.profile.first_name, user.profile.last_name))
+      return ret
 
   # get channel name or id, if prefixed with # try to translate to channel ID
   # if not: return as is (assuming its channel ID)

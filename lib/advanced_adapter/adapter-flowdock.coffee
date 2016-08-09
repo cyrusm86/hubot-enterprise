@@ -20,6 +20,7 @@ request = require 'request'
 Promise = require 'bluebird'
 Channel = require './libs/channel'
 Querystring = require 'querystring'
+User = require './libs/user'
 _ = require 'lodash'
 class Adapter
   constructor: (apiToken = process.env.HUBOT_FLOWDOCK_API_TOKEN) ->
@@ -67,9 +68,14 @@ class Adapter
 
   # get list of users
   usersList: () ->
+    ret = []
     return @callAPI('users', 'get')
     .then (r) ->
-      return r
+      for user in r
+        fullName = user.name.split(' ')
+        ret.push(new User(user.id, user.nick, user.email,
+          fullName[0] || '', fullName[1] || ''))
+      return ret
 
   findChannels: (channels) ->
     res = []
@@ -96,8 +102,8 @@ class Adapter
     return @usersList()
     .then (r) ->
       for user in r
-        if (_.includes(users, user.nick))
-          users.splice(users.indexOf(user.nick), 1)
+        if (_.includes(users, user.name))
+          users.splice(users.indexOf(user.name), 1)
         else if (_.includes(users, user.email))
           users.splice(users.indexOf(user.email), 1)
         else if (_.includes(users, user.id))
