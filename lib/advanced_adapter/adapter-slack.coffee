@@ -301,7 +301,7 @@ class Adapter
         .then (r) ->
           # send to DM channel
           robot.send {room: r}, toSend
-    # send to channel (if now DM)
-    # robot.send {room: opt.room}, toSend
+    # send to channel (if not DM)
+    robot.send {room: opt.room}, toSend
 
 module.exports = Adapter
