@@ -160,7 +160,7 @@ class Adapter
   #
   # channelId: id or name of the channel
   #
-  # returns array of Channel objects
+  # returns Channel object
   # throws Promise rejection
   channelInfo: (channelId) ->
     opts = {token: @apiToken}
@@ -261,6 +261,27 @@ class Adapter
       channel = r.channel
       return new Channel(channel.id, channel.name, channel.name,
         channel.created, channel.topic.value)
+
+  # find channel/s, return id array
+  #
+  # channels: array of channels or string: accepting name, nice_name, id
+  #
+  # returns array of user ids
+  findChannels: (channels) ->
+    res = []
+    if (typeof channels == 'string')
+      channels = [channels]
+    return @channelList()
+    .then (r) ->
+      for channel in r
+        if (_.includes(channels, channel.name))
+          channels.splice(channels.indexOf(channel.name), 1)
+        else if (_.includes(channels, channel.nice_name))
+          channels.splice(channels.indexOf(channel.nice_name), 1)
+        else
+          continue
+        res.push(channel.id)
+      return res
 
   # find user/s, return id array
   #
