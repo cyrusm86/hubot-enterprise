@@ -102,13 +102,15 @@ class Adapter
     return @channelList()
     .then (r) ->
       for channel in r
-        if (_.includes(channels, channel.name))
+        if (_.includes(channels, channel.id))
+          channels.splice(channels.indexOf(channel.id), 1)
+          res.push(channel.id)
+        else if (_.includes(channels, channel.name))
           channels.splice(channels.indexOf(channel.name), 1)
+          res.push(channel.id)
         else if (_.includes(channels, channel.nice_name))
           channels.splice(channels.indexOf(channel.nice_name), 1)
-        else
-          continue
-        res.push(channel.id)
+          res.push(channel.id)
       return res
 
   # find user/s, return id array
@@ -125,13 +127,13 @@ class Adapter
       for user in r
         if (_.includes(users, user.name))
           users.splice(users.indexOf(user.name), 1)
+          res.push(user.id)
         else if (_.includes(users, user.email))
           users.splice(users.indexOf(user.email), 1)
+          res.push(user.id)
         else if (_.includes(users, user.id))
           users.splice(users.indexOf(user.id), 1)
-        else
-          continue
-        res.push(user.id)
+          res.push(user.id)
       return res
 
 
