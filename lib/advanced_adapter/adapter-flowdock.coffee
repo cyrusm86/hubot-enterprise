@@ -45,15 +45,27 @@ class Adapter
           reject(err)
       )
 
-  # channel info
+  # get info for specific channel
+  #
+  # channelId: id or name of the channel
+  #
+  # returns Channel object
+  # throws Promise rejection
   channelInfo: (channelId) ->
+    # TODO: channelNameToId
     return @callAPI('flows/find', 'get', {id: channelId})
     .then (r) ->
       return new Channel(r.id, r.parameterized_name, r.name,
         r.sources[0].created_at, r.description)
 
-  # list all channels
+  # list channels
+  #
+  # excludeArchived: exclude archived channels
+  #
+  # returns array of Channel objects
+  # throws Promise rejection
   channelList: (excludeArchived) ->
+    # TODO: implement excludeArchived
     _this = @
     return @callAPI('flows', 'get')
     .then (r) ->
@@ -65,8 +77,9 @@ class Adapter
       .then (r) ->
         return r
 
-
   # get list of users
+  #
+  # returns array of User objects
   usersList: () ->
     ret = []
     return @callAPI('users', 'get')
@@ -77,6 +90,11 @@ class Adapter
           fullName[0] || '', fullName[1] || ''))
       return ret
 
+  # find channel/s, return id array
+  #
+  # channels: array of channels or string: accepting name, nice_name, id
+  #
+  # returns array of user ids
   findChannels: (channels) ->
     res = []
     if (typeof channels == 'string')
@@ -84,17 +102,22 @@ class Adapter
     return @channelList()
     .then (r) ->
       for channel in r
-        if (_.includes(channels, channel.name))
+        if (_.includes(channels, channel.id))
+          channels.splice(channels.indexOf(channel.id), 1)
+          res.push(channel.id)
+        else if (_.includes(channels, channel.name))
           channels.splice(channels.indexOf(channel.name), 1)
-        else if (_.includes(channels, channel.parameterized_name))
-          channels.splice(channels.indexOf(channel.parameterized_name), 1)
-        else
-          continue
-        res.push(channel.id)
+          res.push(channel.id)
+        else if (_.includes(channels, channel.nice_name))
+          channels.splice(channels.indexOf(channel.nice_name), 1)
+          res.push(channel.id)
       return res
 
   # find user/s, return id array
-  # users = array of users or string: accepting nick, email, id
+  #
+  # users: array of users or string: accepting nick, email, id
+  #
+  # returns array of user ids
   findUsersID: (users) ->
     res = []
     if (typeof users == 'string')
@@ -104,13 +127,13 @@ class Adapter
       for user in r
         if (_.includes(users, user.name))
           users.splice(users.indexOf(user.name), 1)
+          res.push(user.id)
         else if (_.includes(users, user.email))
           users.splice(users.indexOf(user.email), 1)
+          res.push(user.id)
         else if (_.includes(users, user.id))
           users.splice(users.indexOf(user.id), 1)
-        else
-          continue
-        res.push(user.id)
+          res.push(user.id)
       return res
 
 
