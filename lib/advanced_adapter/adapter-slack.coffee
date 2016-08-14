@@ -18,6 +18,8 @@ See the License for the specific language governing permissions and limitations 
 
 Querystring = require 'querystring'
 SlackApi = require './libs/slack_web_api'
+User = require './libs/user'
+Channel = require './libs/channel'
 Promise = require 'bluebird'
 _ = require 'lodash'
 
@@ -34,8 +36,12 @@ class Adapter
     end: '```'
 
   # set channel topic
+  #
   # channelId: id or name of the channel
   # topic: string for the topic
+  #
+  # returns true
+  # throws Promise rejection
   setTopic: (channelId, topic)->
     opts =
       token: @apiToken
@@ -43,11 +49,16 @@ class Adapter
     return @channelNameToId(channelId)
     .then (r) ->
       opts.channel = r
-      return SlackApi.channels.setTopic opts
+      return SlackApi.channels.setTopic(opts)
+      .then (r) ->
+        return true
 
   # create DM Channel:
-  # using BOT token and no API token
+  # using BOT token instead of API token
+  #
   # user: user ID or @user
+  #
+  # returns channel id
   createDM: (user) ->
     _this = @
     opts =
@@ -58,41 +69,61 @@ class Adapter
       return _this.findUsersID(user.replace('@', ''))
       .then (r) ->
         opts.user = r[0]
-        return SlackApi.im.open opts
+        return SlackApi.im.open(opts)
       .then (r) ->
         resolve(r.channel.id)
 
   # join (self) to channel
+  #
   # channelName: channel Name
+  #
+  # returns true
+  # throws Promise rejection
   join: (channelName) ->
     opts =
       token: @apiToken
       name: channelName
-    SlackApi.channels.join opts
+    return SlackApi.channels.join(opts)
+    .then (r) ->
+      return true
 
   # leave (self) from channel
+  #
   # channelName: channel Name or id
+  #
+  # returns true
+  # throws Promise rejection
   leave: (channelName) ->
-    opts =
-      token: @apiToken
     opts = {token: @apiToken}
     return @channelNameToId(channelName)
     .then (r) ->
       opts.channel = r
-      return SlackApi.channels.leave opts
+      return SlackApi.channels.leave(opts)
+    .then (r) ->
+      return true
 
   # archive channel
+  #
   # channelId: id or name of the channel
+  #
+  # returns true
+  # throws Promise rejection
   archive: (channelId) ->
     opts = {token: @apiToken}
     return @channelNameToId(channelId)
     .then (r) ->
       opts.channel = r
       return SlackApi.channels.archive opts
+    .then (r) ->
+      return true
 
   # rename channel
+  #
   # channelId: id or name of the channel
   # channelName: new name to channel
+  #
+  # returns new channel name
+  # throws Promise rejection
   rename: (channelId, channelName) ->
     opts =
       token: @apiToken
@@ -100,20 +131,35 @@ class Adapter
     return @channelNameToId(channelId)
     .then (r) ->
       opts.channel = r
-      return SlackApi.channels.rename opts
+      return SlackApi.channels.rename(opts)
+    .then (r) ->
+      ret.push(new Channel(channel.id, channel.name, channel.name,
+        channel.created, ''))
 
   # list channels
+  #
   # excludeArchived: exclude archived channels
+  #
+  # returns array of Channel objects
+  # throws Promise rejection
   channelList: (excludeArchived) ->
+    ret = []
     opts =
       token: @apiToken
       exclude_archived: excludeArchived
     return SlackApi.channels.list(opts)
     .then (r) ->
-      return r.channels
+      for channel in r.channels
+        ret.push(new Channel(channel.id, channel.name, channel.name,
+          channel.created, channel.topic.value))
+      return ret
 
   # get info for specific channel
+  #
   # channelId: id or name of the channel
+  #
+  # returns Channel object
+  # throws Promise rejection
   channelInfo: (channelId) ->
     opts = {token: @apiToken}
     return @channelNameToId(channelId)
@@ -121,20 +167,32 @@ class Adapter
       opts.channel = r
       return SlackApi.channels.info(opts)
     .then (r) ->
-      return r.channel
+      channel = r.channel
+      return new Channel(channel.id, channel.name, channel.name,
+        channel.created, channel.topic.value)
 
   # create and invite to channel
+  #
   # channelName: name of the new channel
   # users: string or array of user nick, email, id
+  #
+  # returns true
+  # throws Promise rejection
   createChannelAndInvite: (channelName, users) ->
     _this = @
     return _this.createChannel(channelName)
     .then (r) ->
       return _this.inviteToChannel('#'+r.name, users)
+    .then (r) ->
+      return true
 
   # invite users to channel
+  #
   # channelName: name of channel
   # users: string or array of user nick, email, id
+  #
+  # return true
+  # throws Promise rejection
   inviteToChannel: (channelName, users) ->
     _this = @
     opts =
@@ -155,10 +213,16 @@ class Adapter
             if (e != 'already_in_channel')
               reject(e)
         )
+        .then (r) ->
+          return true
 
   # remove users from channel
+  #
   # channelName: name (prefixed with #) or id of channel
   # users: string or array of user nick, email, id
+  #
+  # returns true
+  # throws Promise rejection
   removeFromChannel: (channelName, users) ->
     _this = @
     opts =
@@ -177,19 +241,53 @@ class Adapter
             if (e == 'cant_kick_self')
               return _this.leave(channel)
         )
+        .then (r) ->
+          return true
 
   # create new channel by name
+  #
   # channelName: name of the new channel
+  #
+  # returns Channel object
+  # throws Promise rejection
   createChannel: (channelName) ->
     opts =
       token: @apiToken
       name: channelName
     return SlackApi.channels.create(opts)
     .then (r) ->
-      return {id: r.channel.id, name: r.channel.name}
+      channel = r.channel
+      return new Channel(channel.id, channel.name, channel.name,
+        channel.created, channel.topic.value)
+
+  # find channel/s, return id array
+  #
+  # channels: array of channels or string: accepting name, nice_name, id
+  #
+  # returns array of user ids
+  findChannels: (channels) ->
+    res = []
+    if (typeof channels == 'string')
+      channels = [channels]
+    return @channelList()
+    .then (r) ->
+      for channel in r
+        if (_.includes(channels, channel.id))
+          channels.splice(channels.indexOf(channel.id), 1)
+          res.push(channel.id)
+        else if (_.includes(channels, channel.name))
+          channels.splice(channels.indexOf(channel.name), 1)
+          res.push(channel.id)
+        else if (_.includes(channels, channel.nice_name))
+          channels.splice(channels.indexOf(channel.nice_name), 1)
+          res.push(channel.id)
+      return res
 
   # find user/s, return id array
-  # users = array of users or string: accepting nick, email, id
+  #
+  # users: array of users or string: accepting nick, email, id
+  #
+  # returns array of user ids
   findUsersID: (users) ->
     res = []
     if (typeof users == 'string')
@@ -201,36 +299,50 @@ class Adapter
         # (case sensitive!)
         if (_.includes(users, user.name))
           users.splice(users.indexOf(user.name), 1)
-        else if (_.includes(users, user.profile.email))
-          users.splice(users.indexOf(user.profile.email), 1)
+          res.push(user.id)
+        else if (_.includes(users, user.email))
+          users.splice(users.indexOf(user.email), 1)
+          res.push(user.id)
         else if (_.includes(users, user.id))
           users.splice(users.indexOf(user.id), 1)
-        else
-          continue
-        res.push(user.id)
+          res.push(user.id)
       return res
 
   # get list of users
+  #
+  # returns array of User objects
   usersList: () ->
+    ret = []
     opts =
       token: @apiToken
     return SlackApi.users.list(opts)
     .then (r) ->
-      return r.members
+      for user in r.members
+        ret.push(new User(user.id, user.name, user.profile.email,
+          user.profile.first_name, user.profile.last_name))
+      return ret
 
   # get channel name or id, if prefixed with # try to translate to channel ID
   # if not: return as is (assuming its channel ID)
+  #
+  # channel ID or name (prefixed by #)
+  #
+  # returns channel id
   channelNameToId: (channel) ->
     if not channel.startsWith('#')
-      # return resolved promise with channel ID
+      # returns resolved promise with channel ID
       return Promise.resolve(channel)
     # assume channel name and try to resolve
     return @getChannelID(channel)
 
   # get channel NAME and translating to ID
+  #
   # channel: should be prefixed with #
+  #
+  # returns channel id
+  # throws Promise rejection
   getChannelID: (channel) ->
-    # return promise that resolving the channel name to channel ID
+    # returns promise that resolving the channel name to channel ID
     _this = @
     return new Promise (resolve, reject) ->
       return _this.channelList(true)
@@ -241,6 +353,7 @@ class Adapter
         return reject("could not find channel #{channel}")
 
   # custom message function
+  #
   # robot: robot object
   # msg: hubot message object
   # message: custom message object or str (for basic)
@@ -255,6 +368,8 @@ class Adapter
   #  room: room name, id, DM id, username with @ prefix
   #  user: username
   # reply: true/false: prefix message with @#{opt.user}
+  #
+  # returns none
   customMessage: (robot, msg, message, opt, reply) ->
     _this = @
     # building message
@@ -294,7 +409,7 @@ class Adapter
         .then (r) ->
           # send to DM channel
           robot.send {room: r}, toSend
-    # send to channel (if now DM)
-    # robot.send {room: opt.room}, toSend
+    # send to channel (if not DM)
+    robot.send {room: opt.room}, toSend
 
 module.exports = Adapter

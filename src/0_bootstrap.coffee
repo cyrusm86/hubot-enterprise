@@ -15,8 +15,7 @@ See the License for the specific language governing permissions and limitations 
 
 # Bootstraping hubot-enterprise
 # adding enterprise functions to robot object
-
-path = require('path')
+Path = require('path')
 Insight = require('insight')
 pkg = require('../package.json')
 
@@ -29,11 +28,15 @@ insight.optOut = process.env.HUBOT_HE_OPT_OUT || false
 insight.track 'HE', 'start'
 
 module.exports = (robot) ->
+  # create e (enterprise object on robot)
   robot.e = {}
+  # `mount` adapter object
   robot.e.adapter = new (require __dirname+
     '/../lib/adapter_core')(robot)
+  # create array for HE integrations to store calls for help
   robot.e.help = []
 
+  # create common strings object
   robot.e.commons = {
     no_such_integration: (product) ->
       return "there is no such integration #{product}"
@@ -41,6 +44,13 @@ module.exports = (robot) ->
       return "help for hubot enterprise:"+content
   }
 
+  # load scripts to robot
+  load_he_scripts = (path) ->
+    scriptsPath = Path.resolve ".", path
+    robot.load scriptsPath
+
+  # find integrations names: find by extracting integration name from integration folder
+  # hubot-integration will become: `integration`
   find_integration_name = ->
     myError = new Error
     trace = myError.stack.split('\n')
@@ -52,7 +62,11 @@ module.exports = (robot) ->
       fname = /\((.*):/i.exec(shift)[1].split(':')[0]
       unless fname == filename
         break
-    fname.match(/\/hubot-(.*?)\//ig).pop().replace(/hubot-|\//g, '')
+    fmatch = fname.match(/\/hubot-(.*?)\//ig)
+    if fmatch
+      return fmatch.pop().replace(/hubot-|\//g, '')
+    # if not matched- return default 'script'
+    return 'script'
 
   # register a listener function with hubot-enterprise
   #
@@ -66,7 +80,6 @@ module.exports = (robot) ->
   #
   # will register function with the following regex:
   # /#{info.product} #{info.action} (.*)/i
-
   robot.e.create = (info, callback) ->
     integration_name = find_integration_name()
     info.product = info.product || integration_name
@@ -97,3 +110,6 @@ module.exports = (robot) ->
 
   # robot.enterprise as alias to robot.e for backward compatibility
   robot.enterprise = robot.e
+
+  # load hubot enterprise scripts (not from integrations) after HE loaded
+  load_he_scripts('enterprise_scripts')

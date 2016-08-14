@@ -18,7 +18,9 @@ See the License for the specific language governing permissions and limitations 
 
 request = require 'request'
 Promise = require 'bluebird'
+Channel = require './libs/channel'
 Querystring = require 'querystring'
+User = require './libs/user'
 _ = require 'lodash'
 class Adapter
   constructor: (apiToken = process.env.HUBOT_FLOWDOCK_API_TOKEN) ->
@@ -43,18 +45,56 @@ class Adapter
           reject(err)
       )
 
-  # list all channels
+  # get info for specific channel
+  #
+  # channelId: id or name of the channel
+  #
+  # returns Channel object
+  # throws Promise rejection
+  channelInfo: (channelId) ->
+    # TODO: channelNameToId
+    return @callAPI('flows/find', 'get', {id: channelId})
+    .then (r) ->
+      return new Channel(r.id, r.parameterized_name, r.name,
+        r.sources[0].created_at, r.description)
+
+  # list channels
+  #
+  # excludeArchived: exclude archived channels
+  #
+  # returns array of Channel objects
+  # throws Promise rejection
   channelList: (excludeArchived) ->
+    # TODO: implement excludeArchived
+    _this = @
     return @callAPI('flows', 'get')
     .then (r) ->
-      return r
+      return Promise.map(r, (channel) ->
+        return _this.channelInfo(channel.id)
+        .then (r) ->
+          return r
+      )
+      .then (r) ->
+        return r
 
   # get list of users
+  #
+  # returns array of User objects
   usersList: () ->
+    ret = []
     return @callAPI('users', 'get')
     .then (r) ->
-      return r
+      for user in r
+        fullName = user.name.split(' ')
+        ret.push(new User(user.id, user.nick, user.email,
+          fullName[0] || '', fullName[1] || ''))
+      return ret
 
+  # find channel/s, return id array
+  #
+  # channels: array of channels or string: accepting name, nice_name, id
+  #
+  # returns array of user ids
   findChannels: (channels) ->
     res = []
     if (typeof channels == 'string')
@@ -62,17 +102,22 @@ class Adapter
     return @channelList()
     .then (r) ->
       for channel in r
-        if (_.includes(channels, channel.name))
+        if (_.includes(channels, channel.id))
+          channels.splice(channels.indexOf(channel.id), 1)
+          res.push(channel.id)
+        else if (_.includes(channels, channel.name))
           channels.splice(channels.indexOf(channel.name), 1)
-        else if (_.includes(channels, channel.parameterized_name))
-          channels.splice(channels.indexOf(channel.parameterized_name), 1)
-        else
-          continue
-        res.push(channel.id)
+          res.push(channel.id)
+        else if (_.includes(channels, channel.nice_name))
+          channels.splice(channels.indexOf(channel.nice_name), 1)
+          res.push(channel.id)
       return res
 
   # find user/s, return id array
-  # users = array of users or string: accepting nick, email, id
+  #
+  # users: array of users or string: accepting nick, email, id
+  #
+  # returns array of user ids
   findUsersID: (users) ->
     res = []
     if (typeof users == 'string')
@@ -80,15 +125,15 @@ class Adapter
     return @usersList()
     .then (r) ->
       for user in r
-        if (_.includes(users, user.nick))
-          users.splice(users.indexOf(user.nick), 1)
+        if (_.includes(users, user.name))
+          users.splice(users.indexOf(user.name), 1)
+          res.push(user.id)
         else if (_.includes(users, user.email))
           users.splice(users.indexOf(user.email), 1)
+          res.push(user.id)
         else if (_.includes(users, user.id))
           users.splice(users.indexOf(user.id), 1)
-        else
-          continue
-        res.push(user.id)
+          res.push(user.id)
       return res
 
 

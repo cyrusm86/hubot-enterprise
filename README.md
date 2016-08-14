@@ -69,7 +69,7 @@ Write your own:
 
 ```coffee
 module.exports = (robot) ->
- if not robot.enterprise
+ if not robot.e
    robot.logger.error 'hubot-enterprise not present, cannot run'
    return
  robot.logger.info 'hubot-test initialized'
@@ -78,11 +78,11 @@ module.exports = (robot) ->
 
 ```coffee
 robot.e.create {action: 'create',
-help: 'create ticket', type: 'respond|hear'}, (msg, _robot)->
+help: 'create ticket', type: 'respond|hear'}, (msg)->
   #your code here
 
 _this = @
-@myCallback = (msg, _robot) ->
+@myCallback = (msg) ->
   #your code here
 
 robot.e.create {action: 'create',
