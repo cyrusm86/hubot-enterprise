@@ -416,6 +416,13 @@ class Adapter
         .then (r) ->
           # send to DM channel
           robot.send {room: r}, toSend
+    # translate channel with '#'
+    if opt.room[0] == '#'
+      return new Promise (resolve, reject) ->
+        return _this.channelNameToId(opt.room)
+        .then (r) ->
+          # send to DM channel
+          robot.send {room: r}, toSend
     # send to channel (if not DM)
     robot.send {room: opt.room}, toSend
 
