@@ -80,7 +80,7 @@ module.exports = (robot) ->
   #  product: product name- OPTIONAL (lib will determin product by itself)
   #  verb: verb to prerform
   #  entity: entity for verb to operate (optional)
-  #  extra: extra regex (after the first 2), default: " (.*)"
+  #  extra: extra regex (after the first 2), default: "[ ]?(.*)?"
   #  type: hear/respond
   #  help: help message for call
   #
@@ -114,7 +114,7 @@ module.exports = (robot) ->
   #  verb: verb to prerform
   #  entity: entity for verb to operate (optional)
   #  type: hear/respond
-  #  extra: extra regex (after the first 2), default: " (.*)"
+  #  extra: extra regex (after the first 2), default: "[ ]?(.*)?"
   #  help: help string
   # callback: function to run
   #
