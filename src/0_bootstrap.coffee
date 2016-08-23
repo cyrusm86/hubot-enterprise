@@ -75,26 +75,55 @@ module.exports = (robot) ->
     # if not matched- return default 'script'
     return 'script'
 
+  # build regex for enterprise calls and register to HE help module
+  # info: list of the function info:
+  #  product: product name- OPTIONAL (lib will determin product by itself)
+  #  verb: verb to prerform
+  #  entity: entity for verb to operate (optional)
+  #  extra: extra regex (after the first 2), default: " (.*)"
+  #  type: hear/respond
+  #  help: help message for call
+  #
+  # returns regex:
+  #  /#{info.product} #{info.verb} #{info.entity} #{info.extra}/i
+  build_enterprise_regex = (info, integration_name) ->
+    # backward compatibility for old version (verb vas called action)
+    if info.action
+      info.verb = info.action
+      delete info.action
+    if !info.verb
+      throw new Error("Cannot register function for #{integration_name}, "+
+        "no verb passed")
+    info.product = info.product || integration_name
+    extra = if info.extra then " "+info.extra else "[ ]?(.*)?"
+    if !info.type || (info.type != 'hear')
+      info.type = 'respond'
+    re_string = info.product
+    if info.verb
+      re_string += " #{info.verb}"
+    if info.entity
+      re_string += " #{info.entity}"
+    re_string+= "#{extra}"
+    robot.e.help.push(info)
+    return new RegExp(re_string, 'i')
+
   # register a listener function with hubot-enterprise
   #
   # info: list of the function info:
   #  product: product name- OPTIONAL (lib will determin product by itself)
-  #  action: action to prerform
+  #  verb: verb to prerform
+  #  entity: entity for verb to operate (optional)
   #  type: hear/respond
   #  extra: extra regex (after the first 2), default: " (.*)"
   #  help: help string
   # callback: function to run
   #
   # will register function with the following regex:
-  # /#{info.product} #{info.action} (.*)/i
+  # robot[info.type] /#{info.product} #{info.verb} #{info.entity} #{info.extra}/i
   robot.e.create = (info, callback) ->
-    integration_name = find_integration_name()
-    info.product = info.product || integration_name
-    extra = if info.extra then " "+info.extra else "[ ]?(.*)?"
-    if !info.type || (info.type != 'hear')
-      info.type = 'respond'
-    robot.e.help.push(info)
-    re = new RegExp("#{info.product} #{info.action}#{extra}", 'i')
+    re = build_enterprise_regex(info, find_integration_name())
+    robot.logger.debug("HE registering call:\n"+
+      "\trobot.#{info.type} #{re.toString()}")
     robot[info.type] re, (msg) ->
       callback(msg, robot)
 
@@ -103,8 +132,13 @@ module.exports = (robot) ->
     res = ""
     for elem in robot.e.help
       if !product || elem.product == product.trim()
-        res+="\n"+(if elem.type == "respond" then "@#{robot.name} " else "" )+
-        "#{elem.product} #{elem.action}: #{elem.help}"
+        command = elem.product
+        if elem.verb
+          command += " #{elem.verb}"
+        if elem.entity
+          command += " #{elem.entity}"
+        res += "\n"+(if elem.type == "respond" then "@#{robot.name} " else "" )+
+        "#{command}: #{elem.help}"
     if !res
       product = if product then product.trim() else ""
       res = "\n"+robot.e.commons.no_such_integration(product)
