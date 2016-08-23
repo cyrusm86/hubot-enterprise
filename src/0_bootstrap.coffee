@@ -25,7 +25,7 @@ SOFTWARE.
 Path = require('path')
 Insight = require('insight')
 pkg = require('../package.json')
-{Listener, TextListener} = require('../../hubot/src/listener')
+{Listener, TextListener} = require('../node_modules/hubot/src/listener')
 
 Adapter =
 insight = new Insight(
