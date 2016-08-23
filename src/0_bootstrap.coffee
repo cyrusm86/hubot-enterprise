@@ -25,6 +25,7 @@ SOFTWARE.
 Path = require('path')
 Insight = require('insight')
 pkg = require('../package.json')
+{Listener, TextListener} = require('../../hubot/src/listener')
 
 Adapter =
 insight = new Insight(
@@ -86,8 +87,13 @@ module.exports = (robot) ->
   #
   # returns regex:
   #  /#{info.product} #{info.verb} #{info.entity} #{info.extra}/i
-  build_enterprise_regex = (info, integration_name) ->
+  build_enterprise_regex = (info, integration_name, type) ->
+    # if plain regex: assume not HE call
+    if Object.prototype.toString.call(info) == '[object RegExp]'
+      return info
     # backward compatibility for old version (verb vas called action)
+    if type
+      info.type = type
     if info.action
       info.verb = info.action
       delete info.action
@@ -105,6 +111,8 @@ module.exports = (robot) ->
       re_string += " #{info.entity}"
     re_string+= "#{extra}"
     robot.e.help.push(info)
+    robot.logger.debug("HE registering call:\n"+
+      "\trobot.#{info.type} /#{re_string}/i")
     return new RegExp(re_string, 'i')
 
   # register a listener function with hubot-enterprise
@@ -120,12 +128,6 @@ module.exports = (robot) ->
   #
   # will register function with the following regex:
   # robot[info.type] /#{info.product} #{info.verb} #{info.entity} #{info.extra}/i
-  robot.e.create = (info, callback) ->
-    re = build_enterprise_regex(info, find_integration_name())
-    robot.logger.debug("HE registering call:\n"+
-      "\trobot.#{info.type} #{re.toString()}")
-    robot[info.type] re, (msg) ->
-      callback(msg, robot)
 
   # return enterprise help to string
   robot.e.show_help = (product) ->
@@ -144,6 +146,53 @@ module.exports = (robot) ->
       res = "\n"+robot.e.commons.no_such_integration(product)
     res = robot.e.commons.help_msg(res)
     return res
+
+  # Adds a Listener that attempts to match incoming messages based on
+  # a Regex.
+  #
+  # regex: for non HE use: A Regex that determines if the callback should be called.
+  #        for HE use: an object with the following keys:
+  #  product: product name- OPTIONAL (lib will determin product by itself)
+  #  verb: verb to prerform
+  #  entity: entity for verb to operate (optional)
+  #  extra: extra regex (after the first 2), default: "[ ]?(.*)?"
+  #  help: help string
+  #
+  #  HE will rebuild the regex to:
+  #   robot.hear /#{info.product} #{info.verb} #{info.entity} #{info.extra}/i
+  #
+  # options  - An Object of additional parameters keyed on extension name
+  #            (optional).
+  # callback - A Function that is called with a Response object.
+  #
+  # Returns nothing.
+  robot.hear= (regex, options, callback) ->
+    toSend = build_enterprise_regex(regex, find_integration_name(), "hear")
+    robot.listeners.push new TextListener(robot, toSend, options, callback)
+
+  # Adds a Listener that attempts to match incoming messages directed
+  # at the robot based on a Regex. All regexes treat patterns like they begin
+  # with a '^'
+  #
+  # regex: for non HE use: A Regex that determines if the callback should be called.
+  #        for HE use: an object with the following keys:
+  #  product: product name- OPTIONAL (lib will determin product by itself)
+  #  verb: verb to prerform
+  #  entity: entity for verb to operate (optional)
+  #  extra: extra regex (after the first 2), default: "[ ]?(.*)?"
+  #  help: help string
+  #
+  #
+  #  HE will rebuild the regex to:
+  #   robot.hear /#{info.product} #{info.verb} #{info.entity} #{info.extra}/i
+  #
+  # options  - An Object of additional parameters keyed on extension name
+  #            (optional).
+  # callback - A Function that is called with a Response object.
+  #
+  robot.respond= (regex, options, callback) ->
+    toSend = build_enterprise_regex(regex, find_integration_name(), "respond")
+    robot.hear(robot.respondPattern(toSend), options, callback)
 
   # listener for help message
   robot.respond /enterprise(.*)/i, (msg) ->

@@ -89,11 +89,11 @@ module.exports = (robot) ->
       msg.reply 'Error: '+e
 
   # register hubot enterprise functions
-  robot.e.create {product: 'admin', verb: 'archive', entity: 'channel',
+  robot.respond {product: 'admin', verb: 'archive', entity: 'channel',
   help: ' <this|#name>- archive specific channel', type: 'respond'},
   archive_channel
 
-  robot.e.create {product: 'admin',
+  robot.respond {product: 'admin',
   verb: 'archive', entity: 'older',
   extra: '([0-9]+)([dDhHmMsS]) ?(.*)',
   help: ' <N>(D/H/M/S) (named|tag) <name|tag> or <name|tag>- '+
