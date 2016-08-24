@@ -120,7 +120,8 @@ module.exports = (robot) ->
   # callback: function to run
   #
   # will register function with the following regex:
-  # robot[info.type] /#{info.product} #{info.verb} #{info.entity} #{info.extra}/i
+  # robot[info.type]
+  #  /#{info.product} #{info.verb} #{info.entity} #{info.extra}/i
   robot.e.create = (info, callback) ->
     re = build_enterprise_regex(info, find_integration_name())
     robot.logger.debug("HE registering call:\n"+
