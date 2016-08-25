@@ -102,6 +102,16 @@ describe 'enterprise tests', ->
         'there is no such integration bar' ]
       ]
 
+  it 'robot.e.create with options', ->
+    @room.robot.e.create {product: 'bar', verb: 'read',
+    help: 'read ticket'}, {options: 'options'},(msg, _robot)->
+      msg.reply 'in foo read'
+    @room.user.say('alice', '@hubot bar read jj').then =>
+      expect(@room.messages).to.eql [
+        [ 'alice', '@hubot bar read jj' ],
+        [ 'hubot', '@alice in foo read' ]
+      ]
+
   # test for backward compatibility robot.enterprise -> robot.e
   it 'check backward compatibility for robot.enterprise', ->
     @room.robot.enterprise.create {product: 'foo2', verb: 'read',

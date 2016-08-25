@@ -116,15 +116,20 @@ module.exports = (robot) ->
   #  type: hear/respond
   #  extra: extra regex (after the first 2), default: "[ ]?(.*)?"
   #  help: help string
+  # options: An Object of additional parameters keyed on extension name
+  #          (optional)
   # callback: function to run
   #
   # will register function with the following regex:
   # robot[info.type] /#{info.product} #{info.verb} #{info.entity} #{info.extra}/i
-  robot.e.create = (info, callback) ->
+  robot.e.create = (info, options, callback) ->
     re = build_enterprise_regex(info, find_integration_name())
+    if not callback?
+      callback = options
+      options = {}
     robot.logger.debug("HE registering call:\n"+
-      "\trobot.#{info.type} #{re.toString()}")
-    robot[info.type] re, (msg) ->
+      "\trobot.#{info.type} #{re.toString()},", options)
+    robot[info.type] re, options, (msg) ->
       callback(msg, robot)
 
   # return enterprise help to string
