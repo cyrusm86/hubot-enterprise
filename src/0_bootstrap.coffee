@@ -91,16 +91,17 @@ module.exports = (robot) ->
     if info.action
       info.verb = info.action
       delete info.action
-    if !info.verb
-      throw new Error("Cannot register function for #{integration_name}, "+
-        "no verb passed")
     info.product = info.product || integration_name
+    if !info.verb
+      throw new Error("Cannot register listener for #{info.product}, "+
+        "no verb passed")
+    if info.verb.includes(" ") || (info.entity && info.entity.includes(" "))
+      throw new Error("Cannot register listener for #{info.product}, "+
+        "verb/entity must be a single word")
     extra = if info.extra then " "+info.extra else "[ ]?(.*)?"
     if !info.type || (info.type != 'hear')
       info.type = 'respond'
-    re_string = info.product
-    if info.verb
-      re_string += " #{info.verb}"
+    re_string = "#{info.product} #{info.verb}"
     if info.entity
       re_string += " #{info.entity}"
     re_string+= "#{extra}"
@@ -119,7 +120,8 @@ module.exports = (robot) ->
   # callback: function to run
   #
   # will register function with the following regex:
-  # robot[info.type] /#{info.product} #{info.verb} #{info.entity} #{info.extra}/i
+  # robot[info.type]
+  #  /#{info.product} #{info.verb} #{info.entity} #{info.extra}/i
   robot.e.create = (info, callback) ->
     re = build_enterprise_regex(info, find_integration_name())
     robot.logger.debug("HE registering call:\n"+
