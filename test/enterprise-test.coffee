@@ -32,13 +32,13 @@ describe 'enterprise tests', ->
   beforeEach ->
     @room = helper.createRoom()
     @room.robot.e.create {product: 'test', verb: 'update', entity: 'ticket'
-    help: 'update ticket', type: 'respond'}, (msg, _robot)->
+    help: 'update ticket', type: 'respond'}, (msg)->
       msg.reply 'in test update ticket'
     @room.robot.e.create {product: 'test', verb: 'read', entity: 'issue'
-    help: 'read ticket', type: 'hear'}, (msg, _robot)->
+    help: 'read ticket', type: 'hear'}, (msg)->
       msg.reply 'in test read issue'
     @room.robot.e.create {product: 'foo', verb: 'read', entity: 'ticket'
-    help: 'read ticket', type: 'respond'}, (msg, _robot)->
+    help: 'read ticket', type: 'respond'}, (msg)->
       msg.reply 'in foo read ticket'
   afterEach ->
     @room.destroy()
@@ -58,7 +58,7 @@ describe 'enterprise tests', ->
 
   it 'register default project naming', ->
     @room.robot.e.create {verb: 'read',
-    help: 'read ticket', type: 'hear'}, (msg, _robot)->
+    help: 'read ticket', type: 'hear'}, (msg)->
       msg.reply 'in enterprise read'
     @room.user.say('alice', 'enterprise read jj').then =>
       expect(@room.messages).to.eql [
@@ -68,7 +68,7 @@ describe 'enterprise tests', ->
 
   it 'register default listener option (respond)', ->
     @room.robot.e.create {product: 'bar', verb: 'read',
-    help: 'read ticket'}, (msg, _robot)->
+    help: 'read ticket'}, (msg)->
       msg.reply 'in foo read'
     @room.user.say('alice', '@hubot bar read jj').then =>
       expect(@room.messages).to.eql [
@@ -112,10 +112,43 @@ describe 'enterprise tests', ->
         [ 'hubot', '@alice in foo read' ]
       ]
 
+
+  it 'verb should exist', ->
+    err = 'none'
+    try
+      @room.robot.enterprise.create {product: 'foo2',
+      entity: 'ticket', help: 'read ticket', type: 'respond'}, (msg)->
+        msg.reply 'in foo2 read ticket'
+    catch error
+      err = error.message
+    expect(err).to.eql('Cannot register listener for foo2, no verb passed')
+
+  it 'verb should not contain spaces', ->
+    err = 'none'
+    try
+      @room.robot.enterprise.create {product: 'foo2', verb: 'with space'
+      entity: 'ticket', help: 'read ticket', type: 'respond'}, (msg)->
+        msg.reply 'in foo2 read ticket'
+    catch error
+      err = error.message
+    expect(err).to.eql('Cannot register listener for foo2, verb/entity must '+
+      'be a single word')
+
+  it 'entity should not contain spaces', ->
+    err = 'none'
+    try
+      @room.robot.enterprise.create {product: 'foo2', verb: 'with'
+      entity: 'with space', help: 'read ticket', type: 'respond'}, (msg)->
+        msg.reply 'in foo2 read ticket'
+    catch error
+      err = error.message
+    expect(err).to.eql('Cannot register listener for foo2, verb/entity must '+
+      'be a single word')
+      
   # test for backward compatibility robot.enterprise -> robot.e
   it 'check backward compatibility for robot.enterprise', ->
     @room.robot.enterprise.create {product: 'foo2', verb: 'read',
-    entity: 'ticket', help: 'read ticket', type: 'respond'}, (msg, _robot)->
+    entity: 'ticket', help: 'read ticket', type: 'respond'}, (msg)->
       msg.reply 'in foo2 read ticket'
     @room.user.say('alice', '@hubot foo2 read ticket').then =>
       expect(@room.messages).to.eql [
@@ -126,7 +159,7 @@ describe 'enterprise tests', ->
   # test backward compatibility for call set {product, action}
   it 'check backward compatibility for {product, action}', ->
     @room.robot.e.create {product: 'foo2', action: 'read',
-    help: 'read ticket', type: 'respond'}, (msg, _robot)->
+    help: 'read ticket', type: 'respond'}, (msg)->
       msg.reply 'in foo2 read'
     @room.user.say('alice', '@hubot foo2 read').then =>
       expect(@room.messages).to.eql [

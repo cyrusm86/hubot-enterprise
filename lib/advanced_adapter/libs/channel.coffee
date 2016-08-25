@@ -32,6 +32,6 @@ class Channel
     @nice_name = nice_name
     @topic = topic
     # convert time to timestamp
-    @created = new Date(created).getTime() || '';
+    @created = new Date(created).getTime() || ''
 
 module.exports = Channel
