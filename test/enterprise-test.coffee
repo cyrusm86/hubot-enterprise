@@ -111,6 +111,14 @@ describe 'enterprise tests', ->
         [ 'hubot', '@alice in foo read' ]
       ]
 
+  it 'robot.e.create callback must be a function', ->
+    err = 'none'
+    try
+      @room.robot.enterprise.create {product: 'foo2',
+      verb: 'create', help: 'read ticket', type: 'respond'}, "i am a string"
+    catch error
+      err = error.message
+    expect(err).to.eql('callback is not a function but a string')
 
   it 'verb should exist', ->
     err = 'none'
@@ -143,7 +151,7 @@ describe 'enterprise tests', ->
       err = error.message
     expect(err).to.eql('Cannot register listener for foo2, verb/entity must '+
       'be a single word')
-      
+
   # test for backward compatibility robot.enterprise -> robot.e
   it 'check backward compatibility for robot.enterprise', ->
     @room.robot.enterprise.create {product: 'foo2', verb: 'read',

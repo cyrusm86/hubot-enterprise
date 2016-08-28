@@ -117,17 +117,20 @@ module.exports = (robot) ->
   #  extra: extra regex (after the first 2), default: "[ ]?(.*)?"
   #  help: help string
   # options: An Object of additional parameters keyed on extension name
-  #          (optional)
+  #          (optional) as described in:
+  #          https://hubot.github.com/docs/scripting/#listener-metadata
   # callback: function to run
   #
   # will register function with the following regex:
   # robot[info.type]
   #  /#{info.product} #{info.verb} #{info.entity} #{info.extra}/i
   robot.e.create = (info, options, callback) ->
-    re = build_enterprise_regex(info, find_integration_name())
     if not callback?
       callback = options
       options = {}
+    if typeof callback != 'function'
+      throw new Error('callback is not a function but a '+(typeof callback))
+    re = build_enterprise_regex(info, find_integration_name())
     robot.logger.debug("HE registering call:\n"+
       "\trobot.#{info.type} #{re.toString()},", options)
     robot[info.type] re, options, (msg) ->
