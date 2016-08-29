@@ -124,10 +124,12 @@ module.exports = (robot) ->
   # will register function with the following regex:
   # robot[info.type]
   #  /#{info.product} #{info.verb} #{info.entity} #{info.extra}/i
-  robot.e.create = (info, options, callback) ->
-    if not callback?
-      callback = options
-      options = {}
+  robot.e.create = (info, args...) ->
+    if !args.length
+      throw new Error('please pass a callback')
+    # set callback and options using arguments array
+    callback = if args.length > 1 then args[1] else args[0]
+    options = if args.length > 1 then args[0] else {}
     if typeof callback != 'function'
       throw new Error('callback is not a function but a '+(typeof callback))
     re = build_enterprise_regex(info, find_integration_name())

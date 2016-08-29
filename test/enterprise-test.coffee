@@ -111,6 +111,15 @@ describe 'enterprise tests', ->
         [ 'hubot', '@alice in foo read' ]
       ]
 
+  it 'robot.e.create at least callback must be passed', ->
+    err = 'none'
+    try
+      @room.robot.enterprise.create {product: 'foo2',
+      verb: 'create', help: 'read ticket', type: 'respond'}
+    catch error
+      err = error.message
+    expect(err).to.eql('please pass a callback')
+
   it 'robot.e.create callback must be a function', ->
     err = 'none'
     try
