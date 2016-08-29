@@ -24,6 +24,7 @@ Hubot middleware and scripts for enterprise
   - **integrations_on_disk**: hubot scripts npms located on local disc, can be either npm project folder or number npm folders prefixed with `hubot-` prefix
 
   - **NPM_INTEGRATIONS**: list of hubot scripts to be installed using npm
+  - **ADAPTER**: default is slack, here can specify any other adapter to be installed via npm and used by hubot
 
 ### Other methods
 
