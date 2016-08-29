@@ -21,9 +21,16 @@ Hubot middleware and scripts for enterprise
 	-e "HUBOT_SLACK_TOKEN=xxxxxxxxxxx"
   chatopshpe/hubot-enterprise
   ```
-  - **integrations_on_disk**: hubot scripts npms located on local disc, can be either npm project folder or number npm folders prefixed with `hubot-` prefix
+  - **integrations_on_disk**: hubot integrations that located in the specified folder.
 
-  - **NPM_INTEGRATIONS**: list of hubot scripts to be installed using npm
+    this folder may **BE** an integration or **CONTAIN** number of integration
+  folders (named with `hubot-` prefix)
+
+    examples:
+
+    - `/opt/myIntegration/`: may be a project and contain `package.json` file and all rest project structure
+    - `/opt/myIntegrations`: may contain number of folders that contains integrations like and prefixed with `hubot`
+  - **NPM_INTEGRATIONS**: list of hubot integrations to be installed using npm.
 
 ### Other methods
 
