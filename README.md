@@ -4,14 +4,38 @@ Hubot middleware and scripts for enterprise
 
 ## Installation
 
+### Using docker
+
+- `docker pull chatopshpe/hubot-enterprise`
+- if using slack: [set up slack](#slack-web-api-token-generation)
+- run docker:
+  ```bash
+  docker run \
+    -v <integrations_on_disk>:/integration \
+    -e 'NPM_INTEGRATIONS=<integration to install from npm>'\
+    -e "http_proxy=${http_proxy}" \
+    -e "https_proxy=${https_proxy}" \
+    -e "no_proxy=${no_proxy}" \
+    -e "ADAPTER=slack" \
+	-e "SLACK_APP_TOKEN=xxxxxxxxx"
+	-e "HUBOT_SLACK_TOKEN=xxxxxxxxxxx"
+  chatopshpe/hubot-enterprise
+  ```
+  - **integrations_on_disk**: hubot scripts npms located on local disc, can be either npm project folder or number npm folders prefixed with `hubot-` prefix
+
+  - **NPM_INTEGRATIONS**: list of hubot scripts to be installed using npm
+
+### Other methods
 
 **Creating your new bot**
+
 - `npm install -g coffee-script yo eedevops/generator-hubot-enterprise`
 - `mkdir /path/to/hubot/`
 - `cd /path/to/hubot`
 - `yo hubot-enterprise`
 
 **adding hubot enterprise to existing bot**
+
 - `cd /path/to/hubot/`
 - `npm install --save eedevops/hubot-enterprise`
 - Add **hubot-enterprise** to `external-scripts.json`, should
@@ -29,12 +53,13 @@ be the **FIRST** in the list:
 
 ### Slack Web API token generation:
 #### for testing:
+
 - Go to https://api.slack.com/docs/oauth-test-tokens
-- Generate token from the team the bot should run
+- Generate token from the team, where the bot should run
 
 #### for production:
-- Register new application with slack (make it private) https://api.slack.com/apps
-- Add the app to your team to get API token
+
+- Follow [set up slack](https://github.com/eedevops/hubot-enterprise/wiki/slack#app-configuration)
 
 Run with the generated token as environment variable `SLACK_APP_TOKEN`
 
