@@ -21,15 +21,14 @@
 FROM node:4
 
 # currently support only slack out of the box
-# to replace adapter: add new Dockerfile to install other adapter
+# to replace adapter: run with different ADAPTER env
 # and change ADAPTER env to new adapter name
 ENV ADAPTER slack
 
-RUN apt-get update && apt-get install jq
 RUN mkdir /bot && \
     useradd -ms /bin/bash node && \
     chown -R node /bot && \
-    npm install -g yo@1.7.0 eedevops/generator-hubot-enterprise
+    npm install -g yo@1.7.0 coffee-script eedevops/generator-hubot-enterprise
 
 WORKDIR /bot
 ADD . /he
