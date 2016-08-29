@@ -23,14 +23,17 @@ Hubot middleware and scripts for enterprise
   ```
   - **integrations_on_disk**: hubot integrations that located in the specified folder.
 
-    this folder may **BE** an integration or **CONTAIN** number of integration
-  folders (named with `hubot-` prefix)
+    this folder may **BE** an integration or **CONTAIN** number of integration folders (named with `hubot-` prefix).
 
     examples:
 
-    - `/opt/myIntegration/`: may be a project and contain `package.json` file and all rest project structure
-    - `/opt/myIntegrations`: may contain number of folders that contains integrations like and prefixed with `hubot`
+    - `/opt/myIntegration/`: may be a project and contain `package.json` file and all rest project structure.
+    - `/opt/myIntegrations`: may contain number of folders that contains integrations like and prefixed with `hubot-`.
+
   - **NPM_INTEGRATIONS**: list of hubot integrations to be installed using npm.
+  - **ADAPTER**: default is `slack`, here can specify any other adapter to be installed via npm and used by hubot.
+    - When replacing adapter, Please check and add all environment variable associated to it.
+	- Sample values: `flowdock`, `hipchat`.
 
 ### Other methods
 
