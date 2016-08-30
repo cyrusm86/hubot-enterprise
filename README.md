@@ -11,16 +11,16 @@ Hubot middleware and scripts for enterprise
 - run docker:
   ```bash
   docker run \
-    -v <integrations_on_disk>:/integration \
-    -e 'NPM_INTEGRATIONS=<integration to install from npm>'\
-    -e "http_proxy=${http_proxy}" \
-    -e "https_proxy=${https_proxy}" \
-    -e "no_proxy=${no_proxy}" \
-    -e "ADAPTER=slack" \
-    -e "HUBOT_LOG_LEVEL=info" \
-	  -e "SLACK_APP_TOKEN=xxxxxxxxx" \
-	  -e "HUBOT_SLACK_TOKEN=xxxxxxxxxxx" \
-    chatopshpe/hubot-enterprise
+     -v <integrations_on_disk>:/integration \
+     -e 'NPM_INTEGRATIONS=<integration to install from npm>'\
+     -e "http_proxy=${http_proxy}" \
+     -e "https_proxy=${https_proxy}" \
+     -e "no_proxy=${no_proxy}" \
+     -e "ADAPTER=slack" \
+     -e "HUBOT_LOG_LEVEL=info" \
+     -e "SLACK_APP_TOKEN=xxxxxxxxx" \
+     -e "HUBOT_SLACK_TOKEN=xxxxxxxxxxx" \
+     chatopshpe/hubot-enterprise
   ```
   - **integrations_on_disk**: hubot integrations that located in the specified folder.
 
