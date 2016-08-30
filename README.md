@@ -12,7 +12,7 @@ Hubot middleware and scripts for enterprise
   ```bash
   docker run \
      -v <integrations_on_disk>:/integration \
-     -e "NPM_INTEGRATIONS=<integration to install from npm>"\
+     -e "NPM_INTEGRATIONS=<integration to install from npm>" \
      -e "http_proxy=${http_proxy}" \
      -e "https_proxy=${https_proxy}" \
      -e "no_proxy=${no_proxy}" \
