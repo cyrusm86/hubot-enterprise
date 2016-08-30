@@ -15,7 +15,7 @@ For more information, please reference our [wiki](https://github.com/eedevops/hu
   - [for testing](#for-testing)
   - [for production](https://github.com/eedevops/hubot-enterprise/wiki/slack#app-configuration)
 - [Built in commands](#built-in-commands)
-- [Developing hubot integration with hubot-enterprise support](developing-hubot-integration-with-hubot-enterprise-support)
+- [Developing hubot integration with hubot-enterprise support](#developing-hubot-integration-with-hubot-enterprise-support)
   - [Creating new integration](https://github.com/eedevops/hubot-enterprise/wiki/bootstrap-integration)
   - [Writing integration](https://github.com/eedevops/hubot-enterprise/wiki/api)
   - [Testing your integration](https://github.com/eedevops/hubot-enterprise/wiki/testing)
@@ -78,14 +78,14 @@ The [docker image](Dockerfile) includes:
 
 #### for testing:
 
-**BOT TOKEN (for chat)**
+*BOT TOKEN (for chat)*
 - in slack window, click on your slack team.
 - click on `Apps & Integrations`.
 - Search for `hubot`.
 - Create hubot integration.
 - set the token as `HUBOT_SLACK_TOKEN` environment variable.
 
-**API TOKEN (for admin functionality)**
+*API TOKEN (for admin functionality)*
 - Go to https://api.slack.com/docs/oauth-test-tokens.
 - Generate token from the team, where the bot should run.
 - set it as `SLACK_APP_TOKEN` environment variable.
