@@ -9,9 +9,9 @@ For more information, please reference our [wiki](https://github.com/eedevops/hu
 
 ## Quick links
 - [Installation](https://github.com/eedevops/hubot-enterprise/wiki/bootstrap)
-  1. [Colaboration tool](https://github.com/eedevops/hubot-enterprise/wiki/bootstrap#1-collaboration-tool-select-one-and-set-up-integration-with-hubot)
-  2. [Via docker](https://github.com/eedevops/hubot-enterprise/wiki/bootstrap#docker)
-  3. [Other installation methods](https://github.com/eedevops/hubot-enterprise/wiki/bootstrap#other-installation-methods)
+  - [Colaboration tool](https://github.com/eedevops/hubot-enterprise/wiki/bootstrap#1-collaboration-tool-select-one-and-set-up-integration-with-hubot)
+  - [Via docker](https://github.com/eedevops/hubot-enterprise/wiki/bootstrap#docker)
+  - [Other installation methods](https://github.com/eedevops/hubot-enterprise/wiki/bootstrap#other-installation-methods)
 - [Built in commands](https://github.com/eedevops/hubot-enterprise/wiki/hubot-admin)
 - [Developing hubot integration with hubot-enterprise support](#developing-hubot-integration-with-hubot-enterprise-support)
   - [Creating new integration](https://github.com/eedevops/hubot-enterprise/wiki/bootstrap-integration)
