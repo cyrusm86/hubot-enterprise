@@ -5,6 +5,8 @@ Hubot middleware and scripts for enterprise
 This hubot plugins package created to allow quickly enable multiplatform hubot plugins development and deployment with built in 
 security flows, help mechanism, standartized user experience in terms of syntax, message templating and collaboration platforms management API adapters.
 
+For more information, please reference our [wiki](wiki)
+
 ## Installation
 
 The package can quickly be deployed and installed using docker with the following prerequisites:
@@ -55,29 +57,9 @@ The [docker image](Dockerfile) includes:
  
 - [using Hubot Enterprise with integration](#using-hubot-enterprise-with-integration)
 
-### Other installation methods
+### [Other installation methods](wiki/bootstrap)
 
-**Creating your new bot**
-
-- `npm install -g coffee-script yo eedevops/generator-hubot-enterprise`
-- `mkdir /path/to/hubot/`
-- `cd /path/to/hubot`
-- `yo hubot-enterprise`
-
-**adding hubot enterprise to existing bot**
-
-- `cd /path/to/hubot/`
-- `npm install --save eedevops/hubot-enterprise`
-- Add **hubot-enterprise** to `external-scripts.json`, should
-be the **FIRST** in the list:
-
-  ```json
-  [
-    "hubot-enterprise"
-  ]
-  ```
-
-## configuration
+## configuration (Slack)
  - Slack Web API Token as `SLACK_APP_TOKEN` environment variable
  - Hubot slack token as `HUBOT_SLACK_TOKEN` environment variable
 
@@ -98,12 +80,10 @@ be the **FIRST** in the list:
 
 #### for production:
 
-- Follow [set up slack](https://github.com/eedevops/hubot-enterprise/wiki/slack#app-configuration).
+- Follow [set up slack](wiki/slack#app-configuration).
 - Add the new tokens as environment variables `SLACK_APP_TOKEN` and `HUBOT_SLACK_TOKEN`.
 
-## Commands support
-
-Supported commands:
+## Build in commands
 
 1. archive old: archiving all channels older than specified time
   * `admin archive older 3<d/h/m/s>`
@@ -119,8 +99,7 @@ Supported commands:
 3. enterprise: show enterprise help
   * `@bot-name: enterprise`
 
-## Using Hubot Enterprise with integration
-**For more information, please reffer [hubot-enterprise wiki](https://github.com/eedevops/hubot-enterprise/wiki)**
+## Developing hubot integration with hubot-enterprise support
 
 Example scripts:
 
@@ -128,45 +107,10 @@ Example scripts:
 - [admin.coffee](src/admin.coffee)
 
 Write your own:
-- Start code file as usual hubot script, add this snippet in the head:
-
-```coffee
-module.exports = (robot) ->
- if not robot.e
-   robot.logger.error 'hubot-enterprise not present, cannot run'
-   return
- robot.logger.info 'hubot-test initialized'
-```
-- To register a listener call the following code:
-
-```coffee
-robot.e.create {action: 'create',
-help: 'create ticket', type: 'respond|hear'}, (msg)->
-  #your code here
-
-_this = @
-@myCallback = (msg) ->
-  #your code here
-
-robot.e.create {action: 'create',
-help: 'create ticket', type: 'respond|hear'}, _this.myCallback
-```
-- call will look like that `<product> <action>(.*)`
-  - `product` is the suffix of your integration name (`hubot-<product>`)
-- if passed `extra: 'regex string'` then the last part will be replaced with this
-  - `<product> <action><extra_regex>`
-
-## Testing integration with enterprise support
-- install `hubot-enterprise` as dev dependency:
-  - `npm install --save-dev eedevops/hubot-enterprise`
-- test using hubot-test-helper, currently use this fork: https://github.com/eedevops/hubot-test-helper
-  - `npm install --save-dev eedevops/hubot-test-helper`
-- follow the documentation of hubot-test-helper with one change:
-
-  ```coffee
-  # Helper class should be initialized with this:
-  helper = new Helper(['../node_modules/hubot-enterprise/src', <your_module>])
-  ```
+  - [Creating new integration](wiki/bootstrap-integration)
+  - [Writing integration](wiki/api)
+  - [Testing your integration](wiki/testing)
+  - [Using jenkins pipeline docker image](wiki/jenkins)
 
 ## DISCLAIMER
 
