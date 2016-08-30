@@ -7,6 +7,21 @@ security flows, help mechanism, standartized user experience in terms of syntax,
 
 For more information, please reference our [wiki](https://github.com/eedevops/hubot-enterprise/wiki)
 
+## Quick links for thus README
+- [Installation](#installation)
+  - [Docker](#running-hubot-enterprise-via-docker)
+  - [Other installation methods](https://github.com/eedevops/hubot-enterprise/wiki/bootstrap)
+- [Bot Configuration](#bot-configuration-slack)
+  - [for testing](#for-testing)
+  - [for production](https://github.com/eedevops/hubot-enterprise/wiki/slack#app-configuration)
+- [Built in commands](#built-in-commands)
+- [Developing hubot integration with hubot-enterprise support](developing-hubot-integration-with-hubot-enterprise-support)
+  - [Creating new integration](https://github.com/eedevops/hubot-enterprise/wiki/bootstrap-integration)
+  - [Writing integration](https://github.com/eedevops/hubot-enterprise/wiki/api)
+  - [Testing your integration](https://github.com/eedevops/hubot-enterprise/wiki/testing)
+  - [Using jenkins pipeline docker image](https://github.com/eedevops/hubot-enterprise/wiki/jenkins)
+- [DISCLAIMER](#disclaimer)
+
 ## Installation
 
 The package can quickly be deployed and installed using docker with the following prerequisites:
@@ -54,16 +69,13 @@ The [docker image](Dockerfile) includes:
 
  - **HUBOT_LOG_LEVEL**: level for hubot logger, default `info` optional values: `debug`|`info`|`error`
  - Run as daemon by adding `-d` after the `docker run`.
- 
-- [using Hubot Enterprise with integration](#using-hubot-enterprise-with-integration)
 
 ### [Other installation methods](https://github.com/eedevops/hubot-enterprise/wiki/bootstrap)
 
-## configuration (Slack)
+## Bot Configuration (Slack)
  - Slack Web API Token as `SLACK_APP_TOKEN` environment variable
  - Hubot slack token as `HUBOT_SLACK_TOKEN` environment variable
 
-### Slack Web API token generation:
 #### for testing:
 
 **BOT TOKEN (for chat)**
@@ -83,7 +95,7 @@ The [docker image](Dockerfile) includes:
 - Follow [set up slack](https://github.com/eedevops/hubot-enterprise/wiki/slack#app-configuration).
 - Add the new tokens as environment variables `SLACK_APP_TOKEN` and `HUBOT_SLACK_TOKEN`.
 
-## Build in commands
+## Built in commands
 
 1. archive old: archiving all channels older than specified time
   * `admin archive older 3<d/h/m/s>`
