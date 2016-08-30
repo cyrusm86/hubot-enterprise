@@ -2,15 +2,28 @@
 
 Hubot middleware and scripts for enterprise
 
+This hubot plugins package created to allow quickly enable multiplatform hubot plugins development and deployment with built in 
+security flows, help mechanism, standartized user experience in terms of syntax, message templating and collaboration platforms management API adapters.
+
 ## Installation
 
-### Using docker
+The package can quickly be deployed and installed using docker with the following prerequisites:
+- docker- recommended version: 1.12. [install docker](https://docs.docker.com/engine/installation/).
 
+The [docker image](Dockerfile) includes:
+  - nodejs 4 image: [node:4](https://hub.docker.com/r/library/node/) docker image.
+  - [yoeman](http://yeoman.io/).
+  - [coffee-script](http://coffeescript.org/).
+  - [generator-hubot-enterprise](https://github.com/eedevops/generator-hubot-enterprise) which is a fork of [genarator-hubot](https://github.com/github/generator-hubot).
+
+### Running Hubot Enterprise via docker
+ 
 - `docker pull chatopshpe/hubot-enterprise`
 - if using slack: [set up slack](#slack-web-api-token-generation)
 - run docker:
   ```bash
   docker run \
+     -p 8080:8080 \
      -v <integrations_on_disk>:/integration \
      -e "NPM_INTEGRATIONS=<integration to install from npm>" \
      -e "http_proxy=${http_proxy}" \
@@ -38,8 +51,11 @@ Hubot middleware and scripts for enterprise
 	  -Sample values: `flowdock`, `hipchat`.
 
  - **HUBOT_LOG_LEVEL**: level for hubot logger, default `info` optional values: `debug`|`info`|`error`
+ - Run as daemon by adding `-d` after the `docker run`.
+ 
+- [using Hubot Enterprise with integration](#using-hubot-enterprise-with-integration)
 
-### Other methods
+### Other installation methods
 
 **Creating your new bot**
 
@@ -103,7 +119,7 @@ Supported commands:
 3. enterprise: show enterprise help
   * `@bot-name: enterprise`
 
-## Using enterprise with integration
+## Using Hubot Enterprise with integration
 **For more information, please reffer [hubot-enterprise wiki](https://github.com/eedevops/hubot-enterprise/wiki)**
 
 Example scripts:
