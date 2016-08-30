@@ -28,7 +28,7 @@ module.exports = (robot) ->
   _this = @
 
   archive_channel = (msg, _robot) ->
-    if msg.match[1]=='general'
+    if msg.match[1]=='#general'
       msg.reply 'cannot archive #general channel'
       return
     else if msg.match[1]=='this'
