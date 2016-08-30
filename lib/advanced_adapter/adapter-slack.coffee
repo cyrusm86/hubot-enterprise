@@ -139,8 +139,8 @@ class Adapter
       opts.channel = r
       return SlackApi.channels.rename(opts)
     .then (r) ->
-      ret.push(new Channel(channel.id, channel.name, channel.name,
-        channel.created, ''))
+      return new Channel(r.id, r.name, r.name,
+        r.created, '')
 
   # list channels
   #

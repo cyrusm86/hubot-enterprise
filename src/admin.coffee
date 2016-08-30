@@ -28,19 +28,17 @@ module.exports = (robot) ->
   _this = @
 
   archive_channel = (msg, _robot) ->
-    if msg.match[1]=='#general'
+    if msg.match[1]=='general'
       msg.reply 'cannot archive #general channel'
       return
-    if (msg.match[1]=='this')
-      channel = ['', msg.envelope.message.room]
-    else if (!msg.match[1].startsWith('#'))
-      msg.reply 'channel name should start with #'
-      return
-    else if (!(channel = /(#[^\s]+)/i.exec(msg.envelope.message.text)))
-      msg.reply 'could not find channel '+msg.match[1]
-      return
-    channel = channel[1]
-    _robot.logger.debug 'archiving channel: '+channel
+    else if msg.match[1]=='this'
+      channel = msg.envelope.message.room
+      if channel[0] == 'D'
+        msg.reply 'cannot archive Direct message channel!'
+        return
+    else
+      channel = '#'+msg.match[1]
+    _robot.logger.debug 'archiving channel: #'+channel
     msg.reply 'Yes sir!'
     archive.archive_channel(msg, channel)
     .catch (e) ->
