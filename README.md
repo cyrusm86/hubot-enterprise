@@ -15,10 +15,11 @@ Hubot middleware and scripts for enterprise
     -e 'NPM_INTEGRATIONS=<integration to install from npm>'\
     -e "http_proxy=${http_proxy}" \
     -e "https_proxy=${https_proxy}" \
+    -e "HUBOT_LOG_LEVEL=info" \
     -e "no_proxy=${no_proxy}" \
     -e "ADAPTER=slack" \
-	-e "SLACK_APP_TOKEN=xxxxxxxxx"
-	-e "HUBOT_SLACK_TOKEN=xxxxxxxxxxx"
+	-e "SLACK_APP_TOKEN=xxxxxxxxx" \
+	-e "HUBOT_SLACK_TOKEN=xxxxxxxxxxx" \
   chatopshpe/hubot-enterprise
   ```
   - **integrations_on_disk**: hubot integrations that located in the specified folder.
@@ -31,9 +32,12 @@ Hubot middleware and scripts for enterprise
     - `/opt/myIntegrations`: may contain number of folders that contains integrations like and prefixed with `hubot-`.
 
   - **NPM_INTEGRATIONS**: list of hubot integrations to be installed using npm.
+  
   - **ADAPTER**: default is `slack`, here can specify any other adapter to be installed via npm and used by hubot.
     - When replacing adapter, Please check and add all environment variable associated to it.
-	- Sample values: `flowdock`, `hipchat`.
+	  -Sample values: `flowdock`, `hipchat`.
+
+ - **HUBOT_LOG_LEVEL**: level for hubot logger, default `info` optional values: `debug`|`info`|`error`
 
 ### Other methods
 
@@ -64,14 +68,22 @@ be the **FIRST** in the list:
 ### Slack Web API token generation:
 #### for testing:
 
-- Go to https://api.slack.com/docs/oauth-test-tokens
-- Generate token from the team, where the bot should run
+**BOT TOKEN (for chat)**
+- in slack window, click on your slack team.
+- click on `Apps & Integrations`.
+- Search for `hubot`.
+- Create hubot integration.
+- set the token as `HUBOT_SLACK_TOKEN` environment variable.
+
+**API TOKEN (for admin functionality)**
+- Go to https://api.slack.com/docs/oauth-test-tokens.
+- Generate token from the team, where the bot should run.
+- set it as `SLACK_APP_TOKEN` environment variable.
 
 #### for production:
 
-- Follow [set up slack](https://github.com/eedevops/hubot-enterprise/wiki/slack#app-configuration)
-
-Run with the generated token as environment variable `SLACK_APP_TOKEN`
+- Follow [set up slack](https://github.com/eedevops/hubot-enterprise/wiki/slack#app-configuration).
+- Add the new tokens as environment variables `SLACK_APP_TOKEN` and `HUBOT_SLACK_TOKEN`.
 
 ## Commands support
 
