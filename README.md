@@ -1,9 +1,9 @@
 # hubot-enterprise
 
-Hubot middleware and scripts for enterprise
-
-This hubot plugins package created to allow quickly enable multiplatform hubot plugins development and deployment with built in 
-security flows, help mechanism, standartized user experience in terms of syntax, message templating and collaboration platforms management API adapters.
+**Hubot Enterprise** is comprised of a set of middleware modules and scripts that facilitate writing `hubot` integrations with the following features:
+* Security flows (authorization and authentication)
+* Help mechanisms
+* Standardized, multi-chat platform adapter APIs. 
 
 For more information, please reference our [wiki](https://github.com/eedevops/hubot-enterprise/wiki)
 
