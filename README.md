@@ -5,7 +5,7 @@ Hubot middleware and scripts for enterprise
 This hubot plugins package created to allow quickly enable multiplatform hubot plugins development and deployment with built in 
 security flows, help mechanism, standartized user experience in terms of syntax, message templating and collaboration platforms management API adapters.
 
-For more information, please reference our [wiki](wiki)
+For more information, please reference our [wiki](https://github.com/eedevops/hubot-enterprise/wiki)
 
 ## Installation
 
@@ -57,7 +57,7 @@ The [docker image](Dockerfile) includes:
  
 - [using Hubot Enterprise with integration](#using-hubot-enterprise-with-integration)
 
-### [Other installation methods](wiki/bootstrap)
+### [Other installation methods](https://github.com/eedevops/hubot-enterprise/wiki/bootstrap)
 
 ## configuration (Slack)
  - Slack Web API Token as `SLACK_APP_TOKEN` environment variable
@@ -80,7 +80,7 @@ The [docker image](Dockerfile) includes:
 
 #### for production:
 
-- Follow [set up slack](wiki/slack#app-configuration).
+- Follow [set up slack](https://github.com/eedevops/hubot-enterprise/wiki/slack#app-configuration).
 - Add the new tokens as environment variables `SLACK_APP_TOKEN` and `HUBOT_SLACK_TOKEN`.
 
 ## Build in commands
@@ -107,10 +107,10 @@ Example scripts:
 - [admin.coffee](src/admin.coffee)
 
 Write your own:
-  - [Creating new integration](wiki/bootstrap-integration)
-  - [Writing integration](wiki/api)
-  - [Testing your integration](wiki/testing)
-  - [Using jenkins pipeline docker image](wiki/jenkins)
+  - [Creating new integration](https://github.com/eedevops/hubot-enterprise/wiki/bootstrap-integration)
+  - [Writing integration](https://github.com/eedevops/hubot-enterprise/wiki/api)
+  - [Testing your integration](https://github.com/eedevops/hubot-enterprise/wiki/testing)
+  - [Using jenkins pipeline docker image](https://github.com/eedevops/hubot-enterprise/wiki/jenkins)
 
 ## DISCLAIMER
 
