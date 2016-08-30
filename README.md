@@ -7,7 +7,7 @@ security flows, help mechanism, standartized user experience in terms of syntax,
 
 For more information, please reference our [wiki](https://github.com/eedevops/hubot-enterprise/wiki)
 
-## Quick links for thus README
+## Quick links for README
 - [Installation](#installation)
   - [Docker](#running-hubot-enterprise-via-docker)
   - [Other installation methods](https://github.com/eedevops/hubot-enterprise/wiki/bootstrap)
