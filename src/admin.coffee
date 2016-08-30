@@ -33,9 +33,6 @@ module.exports = (robot) ->
       return
     else if msg.match[1]=='this'
       channel = msg.envelope.message.room
-      if channel[0] == 'D'
-        msg.reply 'cannot archive Direct message channel!'
-        return
     else
       channel = '#'+msg.match[1]
     _robot.logger.debug 'archiving channel: #'+channel
@@ -78,9 +75,9 @@ module.exports = (robot) ->
     msg.reply 'archiving channels with pattern: "'+patterns.join('", "')+
       '" older than '+msg.match[1]+timeType+' by '+type
     archive.archive_old(msg, seconds, patterns, room, type)
-    .then (r) ->
-      robot.logger.debug 'back from Promise', r
-      msg.reply 'done, total archived: '+r.totalArchived
+    .then (response) ->
+      robot.logger.debug 'back from Promise', response
+      msg.reply 'done, total archived: '+response.totalArchived
     .catch (e) ->
       _robot.logger.debug e
       msg.reply 'Error: '+e
