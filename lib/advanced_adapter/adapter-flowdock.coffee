@@ -60,9 +60,9 @@ class Adapter
   channelInfo: (channelId) ->
     # TODO: channelNameToId
     return @callAPI('flows/find', 'get', {id: channelId})
-    .then (r) ->
-      return new Channel(r.id, r.parameterized_name, r.name,
-        r.sources[0].created_at, r.description)
+    .then (channel) ->
+      return new Channel(channel.id, channel.parameterized_name, channel.name,
+        channel.sources[0].created_at, channel.description)
 
   # list channels
   #
@@ -74,14 +74,12 @@ class Adapter
     # TODO: implement excludeArchived
     _this = @
     return @callAPI('flows', 'get')
-    .then (r) ->
-      return Promise.map(r, (channel) ->
+    .then (channels) ->
+      return Promise.map(channels, (channel) ->
         return _this.channelInfo(channel.id)
-        .then (r) ->
-          return r
       )
-      .then (r) ->
-        return r
+      .then (channels) ->
+        return channels
 
   # get list of users
   #
@@ -89,8 +87,8 @@ class Adapter
   usersList: () ->
     ret = []
     return @callAPI('users', 'get')
-    .then (r) ->
-      for user in r
+    .then (users) ->
+      for user in users
         fullName = user.name.split(' ')
         ret.push(new User(user.id, user.nick, user.email,
           fullName[0] || '', fullName[1] || ''))
@@ -106,8 +104,9 @@ class Adapter
     if (typeof channels == 'string')
       channels = [channels]
     return @channelList()
-    .then (r) ->
-      for channel in r
+    .then (channelList) ->
+      console.log(channelList)
+      for channel in channelList
         if (_.includes(channels, channel.id))
           channels.splice(channels.indexOf(channel.id), 1)
           res.push(channel.id)
@@ -129,8 +128,8 @@ class Adapter
     if (typeof users == 'string')
       users = [users]
     return @usersList()
-    .then (r) ->
-      for user in r
+    .then (userList) ->
+      for user in userList
         if (_.includes(users, user.name))
           users.splice(users.indexOf(user.name), 1)
           res.push(user.id)
@@ -185,13 +184,13 @@ class Adapter
       # resolve channel name to id
       new Promise (resolve, reject) ->
         return _this.findChannels(opt.room.replace('#', ''))
-        .then (r) ->
-          resolve(robot.send {room: r[0]}, toSend)
+        .then (channels) ->
+          resolve(robot.send {room: channels[0]}, toSend)
     if opt.room[0] == '@'
       # resolve room user name to id
       new Promise (resolve, reject) ->
         return _this.findUsersID(opt.room.replace('@', ''))
-        .then (r) ->
-          resolve(robot.send {user: {id: r[0]}}, toSend)
+        .then (users) ->
+          resolve(robot.send {user: {id: users[0]}}, toSend)
 
 module.exports = Adapter

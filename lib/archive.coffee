@@ -47,17 +47,17 @@ class Archive
     @robot.logger.debug channel
     @robot.logger.debug 'joining'
     return _adapter.exec(msg, 'join', channel.name)
-    .then (r) ->
-      _robot.logger.debug 'join: '+r+', -> setTopic'
+    .then (res) ->
+      _robot.logger.debug 'join: '+res+', -> setTopic'
       return _adapter.exec(msg, 'setTopic', channel.id, channel.name)
-      .then (r) ->
-        _robot.logger.debug 'setTopic: '+r+' , -> archive'
+      .then (res) ->
+        _robot.logger.debug 'setTopic: '+res+' , -> archive'
         return _adapter.exec(msg, 'archive', channel.id)
-      .then (r) ->
-        _robot.logger.debug 'archive: '+r+', -> rename'
+      .then (res) ->
+        _robot.logger.debug 'archive: '+res+', -> rename'
         return _adapter.exec(msg, 'rename', channel.id, ARCH_PREFIX+Date.now())
-      .then (r) ->
-        _robot.logger.debug 'rename: '+r+', -> BACK'
+      .then (res) ->
+        _robot.logger.debug 'rename: '+res+', -> BACK'
         msg.reply 'archived channel: '+channel.name+' ('+channel.id+'), '+
             'created '+moment(channel.created*1000).fromNow()
         return channel.name
@@ -67,8 +67,8 @@ class Archive
     _this = this
     @robot.logger.debug "in archive channel"
     return _adapter.exec(msg, 'channelInfo', channel)
-    .then (r) ->
-      return _this.archive_single(msg, r)
+    .then (res) ->
+      return _this.archive_single(msg, res)
 
   archive_old: (msg, seconds, patterns, thisChannel, type) ->
     _this = this
@@ -79,8 +79,8 @@ class Archive
     now = Math.floor(Date.now()/1000)
     _robot.logger.debug 'Archiving older than :'+seconds+' seconds'
     return @adapter.exec(msg, 'channelList', true)
-    .then (r) ->
-      channels = _this.sort_channels(msg, r, thisChannel, channelPatterns,
+    .then (res) ->
+      channels = _this.sort_channels(msg, res, thisChannel, channelPatterns,
         type)
       return Promise.map(channels, (channel) ->
         create_time = now - channel.created
@@ -90,16 +90,16 @@ class Archive
           _robot.logger.debug 'archiving '+channel.name+' '+channel.id+
             ' ('+create_time+')'
           return _this.archive_single(msg, channel)
-          .then (r) ->
+          .then (res) ->
             totalArchived++
-            return r
+            return res
       )
-      .then (r) ->
+      .then (res) ->
         _robot.logger.debug 'MAP DONE'
-        r.totalArchived = totalArchived
-        return r
-      .catch (r) ->
-        _robot.logger.debug 'ERROR:'+r
-        r.totalArchived = totalArchived
-        return r
+        res.totalArchived = totalArchived
+        return res
+      .catch (err) ->
+        _robot.logger.debug 'ERROR:'+err
+        err.totalArchived = totalArchived
+        return err
 module.exports = Archive
