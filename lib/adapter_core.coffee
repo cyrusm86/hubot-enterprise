@@ -52,10 +52,10 @@ class AdapterCore
   # params: params for the specific command
   # example (use with bluebird library):
   # return robot.enterprse.adapter.exec(msg, 'listChannels', param, param)
-  # .then (r) ->
+  # .then (res) ->
   #   ...some code...
   #   return robot.enterprse.adapter.exec(msg, 'join', param)
-  # .then (r) ->
+  # .then (res) ->
   #   .. some other code ..
   # .catch (e) ->
   #   ... some error handling code...
