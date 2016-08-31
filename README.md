@@ -1,109 +1,25 @@
 # hubot-enterprise
 
-Hubot middleware and scripts for enterprise
+**Hubot Enterprise** is comprised of a set of middleware modules and scripts that facilitate writing `hubot` integrations with the following features:
+* Security flows (authorization and authentication)
+* Help mechanisms
+* Standardized, multi-chat platform adapter APIs. 
 
-## Installation
+For more information, please reference our [wiki](https://github.com/eedevops/hubot-enterprise/wiki)
 
-
-**Creating your new bot**
-- `npm install -g coffee-script yo eedevops/generator-hubot-enterprise`
-- `mkdir /path/to/hubot/`
-- `cd /path/to/hubot`
-- `yo hubot-enterprise`
-
-**adding hubot enterprise to existing bot**
-- `cd /path/to/hubot/`
-- `npm install --save eedevops/hubot-enterprise`
-- Add **hubot-enterprise** to `external-scripts.json`, should
-be the **FIRST** in the list:
-
-  ```json
-  [
-    "hubot-enterprise"
-  ]
-  ```
-
-## configuration
- - Slack Web API Token as `SLACK_APP_TOKEN` environment variable
- - Hubot slack token as `HUBOT_SLACK_TOKEN` environment variable
-
-### Slack Web API token generation:
-#### for testing:
-- Go to https://api.slack.com/docs/oauth-test-tokens
-- Generate token from the team the bot should run
-
-#### for production:
-- Register new application with slack (make it private) https://api.slack.com/apps
-- Add the app to your team to get API token
-
-Run with the generated token as environment variable `SLACK_APP_TOKEN`
-
-## Commands support
-
-Supported commands:
-
-1. archive old: archiving all channels older than specified time
-  * `admin archive older 3<d/h/m/s>`
-    - Default patterns: incident, advantage channel names
-  * `admin archive older 3<d/h/m/s> <named|tag> pattern1 or pattern2`:
-    - Will archive channels with provided pattern names in channel name or tag
-    - Default delimiter is `" or "`, can be changed using env `HUBOT_ADMIN_OR`
-    - Default channel min length is `3`, can be changed using env `HUBOT_ADMIN_CHANNEL_MIN`
-2. Archive specific: archiving specific channel
-  * `admin archive channel #channelName`
-  * `admin archive channel this` - to archive current channel
-  (_cannot archive private chat or #general channel_)
-3. enterprise: show enterprise help
-  * `@bot-name: enterprise`
-
-## Using enterprise with integration
-**For more information, please reffer [hubot-enterprise wiki](https://github.com/eedevops/hubot-enterprise/wiki)**
-
-Example scripts:
-
-- [example.coffee](example/example.coffee)
-- [admin.coffee](src/admin.coffee)
-
-Write your own:
-- Start code file as usual hubot script, add this snippet in the head:
-
-```coffee
-module.exports = (robot) ->
- if not robot.e
-   robot.logger.error 'hubot-enterprise not present, cannot run'
-   return
- robot.logger.info 'hubot-test initialized'
-```
-- To register a listener call the following code:
-
-```coffee
-robot.e.create {action: 'create',
-help: 'create ticket', type: 'respond|hear'}, (msg)->
-  #your code here
-
-_this = @
-@myCallback = (msg) ->
-  #your code here
-
-robot.e.create {action: 'create',
-help: 'create ticket', type: 'respond|hear'}, _this.myCallback
-```
-- call will look like that `<product> <action>(.*)`
-  - `product` is the suffix of your integration name (`hubot-<product>`)
-- if passed `extra: 'regex string'` then the last part will be replaced with this
-  - `<product> <action><extra_regex>`
-
-## Testing integration with enterprise support
-- install `hubot-enterprise` as dev dependency:
-  - `npm install --save-dev eedevops/hubot-enterprise`
-- test using hubot-test-helper, currently use this fork: https://github.com/eedevops/hubot-test-helper
-  - `npm install --save-dev eedevops/hubot-test-helper`
-- follow the documentation of hubot-test-helper with one change:
-
-  ```coffee
-  # Helper class should be initialized with this:
-  helper = new Helper(['../node_modules/hubot-enterprise/src', <your_module>])
-  ```
+## Quick links
+- [Installation](https://github.com/eedevops/hubot-enterprise/wiki/bootstrap)
+  - [Colaboration tool](https://github.com/eedevops/hubot-enterprise/wiki/bootstrap#1-collaboration-tool-select-one-and-set-up-integration-with-hubot)
+  - [Via docker](https://github.com/eedevops/hubot-enterprise/wiki/bootstrap#docker)
+  - [Other installation methods](https://github.com/eedevops/hubot-enterprise/wiki/bootstrap#other-installation-methods)
+- [Built in commands](https://github.com/eedevops/hubot-enterprise/wiki/hubot-admin)
+- Developing hubot integration with hubot-enterprise support
+  - [Creating new integration](https://github.com/eedevops/hubot-enterprise/wiki/bootstrap-integration)
+  - [Writing integration](https://github.com/eedevops/hubot-enterprise/wiki/api)
+  - [Example scripts](https://github.com/eedevops/hubot-enterprise/wiki/api#example-scripts)
+  - [Testing your integration](https://github.com/eedevops/hubot-enterprise/wiki/testing)
+  - [Using jenkins pipeline docker image](https://github.com/eedevops/hubot-enterprise/wiki/jenkins)
+- [DISCLAIMER](#disclaimer)
 
 ## DISCLAIMER
 
