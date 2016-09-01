@@ -27,7 +27,7 @@ pkg = require('../package.json')
 
 Adapter =
 insight = new Insight(
-  trackingCode: 'UA-80724671-1'
+  trackingCode: process.env.HUBOT_HE_GA_CODE || 'UA-80724671-1'
   pkg: pkg)
 
 insight.optOut = process.env.HUBOT_HE_OPT_OUT || false
