@@ -31,16 +31,11 @@ module.exports = (robot) ->
     if msg.match[1]=='#general'
       msg.reply 'cannot archive #general channel'
       return
-    if (msg.match[1]=='this')
-      channel = ['', msg.envelope.message.room]
-    else if (!msg.match[1].startsWith('#'))
-      msg.reply 'channel name should start with #'
-      return
-    else if (!(channel = /(#[^\s]+)/i.exec(msg.envelope.message.text)))
-      msg.reply 'could not find channel '+msg.match[1]
-      return
-    channel = channel[1]
-    _robot.logger.debug 'archiving channel: '+channel
+    else if msg.match[1]=='this'
+      channel = msg.envelope.message.room
+    else
+      channel = '#'+msg.match[1]
+    _robot.logger.debug 'archiving channel: #'+channel
     msg.reply 'Yes sir!'
     archive.archive_channel(msg, channel)
     .catch (e) ->
@@ -80,9 +75,9 @@ module.exports = (robot) ->
     msg.reply 'archiving channels with pattern: "'+patterns.join('", "')+
       '" older than '+msg.match[1]+timeType+' by '+type
     archive.archive_old(msg, seconds, patterns, room, type)
-    .then (r) ->
-      robot.logger.debug 'back from Promise', r
-      msg.reply 'done, total archived: '+r.totalArchived
+    .then (response) ->
+      robot.logger.debug 'back from Promise', response
+      msg.reply 'done, total archived: '+response.totalArchived
     .catch (e) ->
       _robot.logger.debug e
       msg.reply 'Error: '+e

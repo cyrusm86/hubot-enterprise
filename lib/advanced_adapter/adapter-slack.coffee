@@ -53,10 +53,10 @@ class Adapter
       token: @apiToken
       topic: topic
     return @channelNameToId(channelId)
-    .then (r) ->
-      opts.channel = r
+    .then (channelId) ->
+      opts.channel = channelId
       return SlackApi.channels.setTopic(opts)
-      .then (r) ->
+      .then (res) ->
         return true
 
   # create DM Channel:
@@ -73,11 +73,11 @@ class Adapter
       if (user[0] != '@')
         return user
       return _this.findUsersID(user.replace('@', ''))
-      .then (r) ->
-        opts.user = r[0]
+      .then (usersList) ->
+        opts.user = usersList[0]
         return SlackApi.im.open(opts)
-      .then (r) ->
-        resolve(r.channel.id)
+      .then (channelInfo) ->
+        resolve(channelInfo.channel.id)
 
   # join (self) to channel
   #
@@ -90,7 +90,7 @@ class Adapter
       token: @apiToken
       name: channelName
     return SlackApi.channels.join(opts)
-    .then (r) ->
+    .then (res) ->
       return true
 
   # leave (self) from channel
@@ -102,10 +102,10 @@ class Adapter
   leave: (channelName) ->
     opts = {token: @apiToken}
     return @channelNameToId(channelName)
-    .then (r) ->
-      opts.channel = r
+    .then (channelId) ->
+      opts.channel = channelId
       return SlackApi.channels.leave(opts)
-    .then (r) ->
+    .then (res) ->
       return true
 
   # archive channel
@@ -117,10 +117,10 @@ class Adapter
   archive: (channelId) ->
     opts = {token: @apiToken}
     return @channelNameToId(channelId)
-    .then (r) ->
-      opts.channel = r
+    .then (channelId) ->
+      opts.channel = channelId
       return SlackApi.channels.archive opts
-    .then (r) ->
+    .then (res) ->
       return true
 
   # rename channel
@@ -135,12 +135,12 @@ class Adapter
       token: @apiToken
       name: channelName
     return @channelNameToId(channelId)
-    .then (r) ->
-      opts.channel = r
+    .then (channelId) ->
+      opts.channel = channelId
       return SlackApi.channels.rename(opts)
-    .then (r) ->
-      ret.push(new Channel(channel.id, channel.name, channel.name,
-        channel.created, ''))
+    .then (channelInfo) ->
+      return new Channel(channelInfo.id, channelInfo.name, channelInfo.name,
+        channelInfo.created, '')
 
   # list channels
   #
@@ -154,8 +154,8 @@ class Adapter
       token: @apiToken
       exclude_archived: excludeArchived
     return SlackApi.channels.list(opts)
-    .then (r) ->
-      for channel in r.channels
+    .then (channels) ->
+      for channel in channels.channels
         ret.push(new Channel(channel.id, channel.name, channel.name,
           channel.created, channel.topic.value))
       return ret
@@ -169,11 +169,11 @@ class Adapter
   channelInfo: (channelId) ->
     opts = {token: @apiToken}
     return @channelNameToId(channelId)
-    .then (r) ->
-      opts.channel = r
+    .then (channel) ->
+      opts.channel = channel
       return SlackApi.channels.info(opts)
-    .then (r) ->
-      channel = r.channel
+    .then (channelInfo) ->
+      channel = channelInfo.channel
       return new Channel(channel.id, channel.name, channel.name,
         channel.created, channel.topic.value)
 
@@ -187,9 +187,9 @@ class Adapter
   createChannelAndInvite: (channelName, users) ->
     _this = @
     return _this.createChannel(channelName)
-    .then (r) ->
-      return _this.inviteToChannel('#'+r.name, users)
-    .then (r) ->
+    .then (channel) ->
+      return _this.inviteToChannel('#'+channel.name, users)
+    .then (res) ->
       return true
 
   # invite users to channel
@@ -205,8 +205,8 @@ class Adapter
       token: @apiToken
     userList = []
     return @findUsersID(users)
-    .then (r) ->
-      userList = r
+    .then (users) ->
+      userList = users
       return _this.channelNameToId(channelName)
       .then (channel) ->
         opts.channel = channel
@@ -219,7 +219,7 @@ class Adapter
             if (e != 'already_in_channel')
               reject(e)
         )
-        .then (r) ->
+        .then (res) ->
           return true
 
   # remove users from channel
@@ -235,8 +235,8 @@ class Adapter
       token: @apiToken
     userList = []
     return @findUsersID(users)
-    .then (r) ->
-      userList = r
+    .then (users) ->
+      userList = users
       return _this.channelNameToId(channelName)
       .then (channel) ->
         opts.channel = channel
@@ -247,7 +247,7 @@ class Adapter
             if (e == 'cant_kick_self')
               return _this.leave(channel)
         )
-        .then (r) ->
+        .then (res) ->
           return true
 
   # create new channel by name
@@ -261,8 +261,8 @@ class Adapter
       token: @apiToken
       name: channelName
     return SlackApi.channels.create(opts)
-    .then (r) ->
-      channel = r.channel
+    .then (channelInfo) ->
+      channel = channelInfo.channel
       return new Channel(channel.id, channel.name, channel.name,
         channel.created, channel.topic.value)
 
@@ -276,8 +276,8 @@ class Adapter
     if (typeof channels == 'string')
       channels = [channels]
     return @channelList()
-    .then (r) ->
-      for channel in r
+    .then (channelList) ->
+      for channel in channelList
         if (_.includes(channels, channel.id))
           channels.splice(channels.indexOf(channel.id), 1)
           res.push(channel.id)
@@ -299,8 +299,8 @@ class Adapter
     if (typeof users == 'string')
       users = [users]
     return @usersList()
-    .then (r) ->
-      for user in r
+    .then (userList) ->
+      for user in userList
         # check if username or email or id match to any in the list of users
         # (case sensitive!)
         if (_.includes(users, user.name))
@@ -322,8 +322,8 @@ class Adapter
     opts =
       token: @apiToken
     return SlackApi.users.list(opts)
-    .then (r) ->
-      for user in r.members
+    .then (userList) ->
+      for user in userList.members
         ret.push(new User(user.id, user.name, user.profile.email,
           user.profile.first_name, user.profile.last_name))
       return ret
@@ -352,8 +352,8 @@ class Adapter
     _this = @
     return new Promise (resolve, reject) ->
       return _this.channelList(true)
-      .then (r) ->
-        for ch in r
+      .then (channels) ->
+        for ch in channels
           if ch.name == channel.substr(1)
             return resolve(ch.id)
         return reject("could not find channel #{channel}")
@@ -412,16 +412,16 @@ class Adapter
     if opt.room[0] == '@'
       return new Promise (resolve, reject) ->
         return _this.createDM(opt.room)
-        .then (r) ->
+        .then (room) ->
           # send to DM channel
-          robot.send {room: r}, toSend
+          robot.send {room: room}, toSend
     # translate channel with '#'
     if opt.room[0] == '#'
       return new Promise (resolve, reject) ->
         return _this.channelNameToId(opt.room)
-        .then (r) ->
+        .then (room) ->
           # send to DM channel
-          robot.send {room: r}, toSend
+          robot.send {room: room}, toSend
     # send to channel (if not DM)
     robot.send {room: opt.room}, toSend
 
