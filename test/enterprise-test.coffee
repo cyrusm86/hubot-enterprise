@@ -174,8 +174,9 @@ describe 'listener extra object tests', ->
   afterEach ->
     @room.destroy()
 
-  it 'extra: regex, optional: true- call with extra', ->
-    call = extend({extra: {re: 'with (.*)', optional: true}}, common_create)
+  it 'regex_suffix: regex, optional: true- call with suffix', ->
+    call = extend({regex_suffix: {re: 'with (.*)', optional: true}},
+      common_create)
     @room.robot.e.create call, callback
     @room.user.say('alice', '@hubot foo verb entity with me').then =>
       expect(@room.messages).to.eql [
@@ -183,8 +184,9 @@ describe 'listener extra object tests', ->
         [ 'hubot', '@alice me' ]
       ]
 
-  it 'extra: regex, optional: true- call w/o extra', ->
-    call = extend({extra: {re: 'with (.*)', optional: true}}, common_create)
+  it 'regex_suffix: regex, optional: true- call w/o suffix', ->
+    call = extend({regex_suffix: {re: 'with (.*)', optional: true}},
+      common_create)
     @room.robot.e.create call, callback
     @room.user.say('alice', '@hubot foo verb entity').then =>
       expect(@room.messages).to.eql [
@@ -192,25 +194,46 @@ describe 'listener extra object tests', ->
         [ 'hubot', '@alice NONE' ]
       ]
 
-  it 'extra, regex, optional: false- call with extra', ->
-    call = extend({extra: {re: 'with (.*)', optional: false}}, common_create)
+  it 'regex_suffix: regex, optional: true- call witout space between entity '+
+  'and suffix', ->
+    call = extend({regex_suffix: {re: 'with (.*)', optional: true}},
+      common_create)
+    @room.robot.e.create call, callback
+    @room.user.say('alice', '@hubot foo verb entitywith me').then =>
+      expect(@room.messages).to.eql [
+        [ 'alice', '@hubot foo verb entitywith me' ]
+      ]
+
+  it 'regex_suffix, regex, optional: false- call with suffix', ->
+    call = extend({regex_suffix: {re: 'with (.*)', optional: false}},
+      common_create)
     @room.robot.e.create call, callback
     @room.user.say('alice', '@hubot foo verb entity with me').then =>
       expect(@room.messages).to.eql [
         [ 'alice', '@hubot foo verb entity with me' ],
         [ 'hubot', '@alice me' ]
       ]
+  it 'regex_suffix, regex, optional: false- call witout space between entity '+
+  'and suffix', ->
+    call = extend({regex_suffix: {re: 'with (.*)', optional: false}},
+      common_create)
+    @room.robot.e.create call, callback
+    @room.user.say('alice', '@hubot foo verb entitywith me').then =>
+      expect(@room.messages).to.eql [
+        [ 'alice', '@hubot foo verb entitywith me' ]
+      ]
 
-  it 'extra, regex, optional: false- call without extra', ->
-    call = extend({extra: {re: 'with (.*)', optional: false}}, common_create)
+  it 'regex_suffix, regex, optional: false- call without suffix', ->
+    call = extend({regex_suffix: {re: 'with (.*)', optional: false}},
+      common_create)
     @room.robot.e.create call, callback
     @room.user.say('alice', '@hubot foo verb entity').then =>
       expect(@room.messages).to.eql [
         [ 'alice', '@hubot foo verb entity' ]
       ]
 
-  it 'extra, no regex, optional: true- call with extra', ->
-    call = extend({extra: {optional: true}}, common_create)
+  it 'regex_suffix, no regex, optional: true- call with suffix', ->
+    call = extend({regex_suffix: {optional: true}}, common_create)
     @room.robot.e.create call, callback
     @room.user.say('alice', '@hubot foo verb entity with me').then =>
       expect(@room.messages).to.eql [
@@ -218,16 +241,16 @@ describe 'listener extra object tests', ->
         [ 'hubot', '@alice with me' ]
       ]
 
-  it 'extra, no regex, optional: false- call with extra', ->
-    call = extend({extra: {optional: false}}, common_create)
+  it 'regex_suffix, no regex, optional: false- call with suffix', ->
+    call = extend({regex_suffix: {optional: false}}, common_create)
     @room.robot.e.create call, callback
     @room.user.say('alice', '@hubot foo verb entity with me').then =>
       expect(@room.messages).to.eql [
         [ 'alice', '@hubot foo verb entity with me' ]
       ]
 
-    it 'extra, no regex, optional: false- call without extra', ->
-      call = extend({extra: {optional: false}}, common_create)
+    it 'regex_suffix, no regex, optional: false- call without suffix', ->
+      call = extend({regex_suffix: {optional: false}}, common_create)
       @room.robot.e.create call, callback
       @room.user.say('alice', '@hubot foo verb entity').then =>
         expect(@room.messages).to.eql [
@@ -235,7 +258,7 @@ describe 'listener extra object tests', ->
           [ 'hubot', '@alice NONE' ]
         ]
 
-  it 'no extra boject- call with extra', ->
+  it 'no regex_suffix object- call with suffix', ->
     @room.robot.e.create common_create, callback
     @room.user.say('alice', '@hubot foo verb entity with me').then =>
       expect(@room.messages).to.eql [
@@ -243,7 +266,37 @@ describe 'listener extra object tests', ->
         [ 'hubot', '@alice with me' ]
       ]
 
-  it 'no extra boject- call without extra', ->
+  it 'regex_suffix is null- call with suffix', ->
+    common_create.regex_suffix = null
+    @room.robot.e.create common_create, callback
+    @room.user.say('alice', '@hubot foo verb entity with me').then =>
+      expect(@room.messages).to.eql [
+        [ 'alice', '@hubot foo verb entity with me' ],
+        [ 'hubot', '@alice with me' ]
+      ]
+
+  it 'regex_suffix.re is not a string', ->
+    common_create.regex_suffix = {re: true}
+    err = 'none'
+    try
+      @room.robot.e.create common_create, callback
+    catch error
+      err = error.message
+    expect(err).to.eql('Cannot register a listener, info.regex_suffix.re '+
+      'must be a string or undefined')
+
+  it 'regex_suffix.optional is not boolean', ->
+    common_create.regex_suffix = {optional: "hello"}
+    err = 'none'
+    try
+      @room.robot.e.create common_create, callback
+    catch error
+      err = error.message
+    expect(err).to.eql('Cannot register a listener, '+
+    'info.regex_suffix.optional must be a boolean or undefined')
+
+  it 'no regex_suffix boject- call without suffix', ->
+    delete common_create.regex_suffix
     @room.robot.e.create common_create, callback
     @room.user.say('alice', '@hubot foo verb entity').then =>
       expect(@room.messages).to.eql [
@@ -251,8 +304,19 @@ describe 'listener extra object tests', ->
         [ 'hubot', '@alice NONE' ]
       ]
 
-  it 'extra passed as string (backward compatibility)- call with extra', ->
+  it 'regex suffix is not an object', ->
+    common_create.regex_suffix = true
+    err = 'none'
+    try
+      @room.robot.e.create common_create, callback
+    catch error
+      err = error.message
+    expect(err).to.eql('info.regex_suffix MUST be an object')
+
+
+  it 'extra passed as string (backward compatibility)- call with suffix', ->
     common_create.extra = "with (.*)"
+    delete common_create.regex_suffix
     @room.robot.e.create common_create, callback
     @room.user.say('alice', '@hubot foo verb entity with me').then =>
       expect(@room.messages).to.eql [
@@ -260,8 +324,9 @@ describe 'listener extra object tests', ->
         [ 'hubot', '@alice me' ]
       ]
 
-  it 'extra passed as string (backward compatibility)- call without extra', ->
+  it 'extra passed as string (backward compatibility)- call without suffix', ->
     common_create.extra = "with (.*)"
+    delete common_create.regex_suffix
     @room.robot.e.create common_create, callback
     @room.user.say('alice', '@hubot foo verb entity').then =>
       expect(@room.messages).to.eql [
