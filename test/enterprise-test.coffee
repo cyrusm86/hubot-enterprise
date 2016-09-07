@@ -157,7 +157,7 @@ describe 'basic enterprise tests', ->
         [ 'hubot', '@alice in foo2 read' ]
       ]
 
-describe 'info.extra tests', ->
+describe 'listener extra object tests', ->
 
   callback = (msg) ->
     if msg.match[1]
