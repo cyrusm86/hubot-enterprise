@@ -23,6 +23,7 @@
 # adding enterprise functions to robot object
 Path = require('path')
 Insight = require('insight')
+_ = require 'lodash'
 pkg = require('../package.json')
 
 Adapter =
@@ -74,6 +75,47 @@ module.exports = (robot) ->
     # if not matched- return default 'script'
     return 'script'
 
+  # build extra part of the regex
+  #
+  # info: info object from build_enterprise_regex
+  #  extra: extra element
+  #    optional: true/false- should it be optional
+  #    re: string that representing the regex (optional)
+  build_extra_re = (info) ->
+    # default values set for backward compatibility
+    if (typeof info.extra == "string" && !info.regex_suffix)
+      info.regex_suffix = {re: info.extra, optional: false}
+    # init extra if its not there
+    info.regex_suffix = info.regex_suffix || {optional: true, re: undefined}
+    extra = info.regex_suffix
+    if (typeof extra != "object")
+      throw new Error("info.regex_suffix MUST be an object")
+    # check that re is string or undefined
+    if ! _.includes(["undefined", "string"], (typeof extra.re))
+      throw new Error("Cannot register a listener, info.regex_suffix.re must "+
+        "be a string or undefined")
+    # check that optional is boolean or undefined
+    if ! _.includes(["undefined", "boolean"], (typeof extra.optional))
+      throw new Error("Cannot register a listener, info.regex_suffix.optional "+
+      "must be a boolean or undefined")
+    # TODO: prevent calls similarity as much as possible
+    # TODO: only one verb+entity may have optional: true
+    # TODO: forbid {optional: true} with {re: null, optional: false}
+    # TODO: try to check that 2 regexps are not equal (at least no the same)
+    if extra.re
+      # if extra.re passed and its optional
+      if extra.optional
+        return "(?: #{extra.re})?"
+      #if it's not optional
+      else
+        return " #{extra.re}"
+    #if no extra.re and optional
+    else if extra.optional
+      return '[ ]?(.*)?'
+    #if no extra.re and not optional
+    else
+      return ''
+
   # build regex for enterprise calls and register to HE help module
   # info: list of the function info:
   #  product: product name- OPTIONAL (lib will determin product by itself)
@@ -97,13 +139,13 @@ module.exports = (robot) ->
     if info.verb.includes(" ") || (info.entity && info.entity.includes(" "))
       throw new Error("Cannot register listener for #{info.product}, "+
         "verb/entity must be a single word")
-    extra = if info.extra then " "+info.extra else "[ ]?(.*)?"
+    info.regex = build_extra_re(info)
     if !info.type || (info.type != 'hear')
       info.type = 'respond'
     re_string = "#{info.product} #{info.verb}"
     if info.entity
       re_string += " #{info.entity}"
-    re_string+= "#{extra}"
+    re_string+= "#{info.regex}$"
     robot.e.help.push(info)
     return new RegExp(re_string, 'i')
 

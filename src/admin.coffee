@@ -70,7 +70,7 @@ module.exports = (robot) ->
     else
       patterns = ['advantage', 'incident']
     if patterns.length == 0
-      msg.reply 'no patterns to archive :disappointed:'
+      msg.reply 'no patterns to archive'
       return
     msg.reply 'archiving channels with pattern: "'+patterns.join('", "')+
       '" older than '+msg.match[1]+timeType+' by '+type
