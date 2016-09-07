@@ -74,6 +74,30 @@ module.exports = (robot) ->
     # if not matched- return default 'script'
     return 'script'
 
+  # build extra part of the regex
+  #
+  # info: info object from build_enterprise_regex
+  #  extra: extra element
+  #    optional: true/false- should it be optional
+  #    re: string that representing the regex (optional)
+  build_extra_re = (info) ->
+    extra = info.extra
+    # TODO: prevent calls similarity as much as possible
+    # TODO: only one varb+entity may have optional: true
+    # TODO: forbid {optional: true} with {re: null, optional: false}
+    # TODO: try to check that 2 regexps are not equal (at least no the same)
+    if extra.re
+      # if extra.re passed and its optional
+      if extra.optional
+        return "(?: #{extra.re})?"
+      #if it's not optional
+      return " #{extra.re}"
+    #if no extra.re and optional
+    if extra.optional
+      return '[ ]?(.*)?'
+    #if no extra.re and not optional
+    return ''
+
   # build regex for enterprise calls and register to HE help module
   # info: list of the function info:
   #  product: product name- OPTIONAL (lib will determin product by itself)
@@ -91,19 +115,23 @@ module.exports = (robot) ->
       info.verb = info.action
       delete info.action
     info.product = info.product || integration_name
+    # default values set for backward compatibility
+    if (typeof info.extra == "string")
+      info.extra = {re: info.extra, optional: false}
+    info.extra = info.extra || {optional: true, re: null}
     if !info.verb
       throw new Error("Cannot register listener for #{info.product}, "+
         "no verb passed")
     if info.verb.includes(" ") || (info.entity && info.entity.includes(" "))
       throw new Error("Cannot register listener for #{info.product}, "+
         "verb/entity must be a single word")
-    extra = if info.extra then " "+info.extra else "[ ]?(.*)?"
+    info.regex = build_extra_re(info)
     if !info.type || (info.type != 'hear')
       info.type = 'respond'
     re_string = "#{info.product} #{info.verb}"
     if info.entity
       re_string += " #{info.entity}"
-    re_string+= "#{extra}"
+    re_string+= "#{info.regex}$"
     robot.e.help.push(info)
     return new RegExp(re_string, 'i')
 
