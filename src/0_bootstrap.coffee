@@ -33,7 +33,7 @@ insight = new Insight(
 
 insight.optOut = process.env.HUBOT_HE_OPT_OUT || false
 insight.track 'HE', 'start'
-
+reserverd_apps = [ 'info', 'help' ]
 module.exports = (robot) ->
 
   # Registrar object- store all integrations meta and info
@@ -202,12 +202,18 @@ module.exports = (robot) ->
   #  options: auth options corresponding to selected auth.type
   robot.e.registerIntegration = (metadata, authentication) ->
     integration_name = find_integration_name()
+    if _.includes(reserverd_apps, integration_name)
+      throw new Error("integration name cannot have reserved name "+
+        integration_name)
     if registrar.apps[integration_name]
       throw new Error("Integration #{integration_name} already registred!")
     if (typeof metadata.name == "string")
       if metadata.name.includes(" ")
         throw new Error("Cannot register integration for #{integration_name}, "+
           "name alias must be a single word")
+      else if _.includes(reserverd_apps, metadata.name)
+        throw new Error("integration metadata.name cannot have reserved name "+
+          metadata.name)
       else
         registrar.mapping[metadata.name] = integration_name
     else if _.includes(Object.keys(metadata), 'name')
@@ -318,8 +324,8 @@ module.exports = (robot) ->
     return res
 
   # listener for help message
-  robot.respond /enterprise[ ]?(\w+)?[ ]?(\w+)?[ ]?(\w+)?/i, (msg) ->
-    msg.reply robot.e.show_help(msg.match[1], msg.match[2], msg.match[3])
+  robot.respond /(enterprise|info)[ ]?(\w+)?[ ]?(\w+)?[ ]?(\w+)?/i, (msg) ->
+    msg.reply robot.e.show_help(msg.match[2], msg.match[3], msg.match[4])
 
   # robot.enterprise as alias to robot.e for backward compatibility
   robot.enterprise = robot.e
