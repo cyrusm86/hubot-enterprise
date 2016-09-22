@@ -31,15 +31,18 @@ helper = new Helper('../src/0_bootstrap.coffee')
 describe 'basic enterprise tests', ->
   beforeEach ->
     @room = helper.createRoom()
-    @room.robot.e.create {product: 'test', verb: 'update', entity: 'ticket'
+    @room.robot.e.registerIntegration({
+      short_desc: 'hubot-enterprise administration functions', name: 'test'})
+    @room.robot.e.create {verb: 'update', entity: 'ticket'
     help: 'update ticket', type: 'respond'}, (msg)->
       msg.reply 'in test update ticket'
-    @room.robot.e.create {product: 'test', verb: 'read', entity: 'issue'
+    @room.robot.e.create {verb: 'read', entity: 'issue'
     help: 'read ticket', type: 'hear'}, (msg)->
       msg.reply 'in test read issue'
-    @room.robot.e.create {product: 'foo', verb: 'read', entity: 'ticket'
+    @room.robot.e.create {verb: 'read', entity: 'list'
     help: 'read ticket', type: 'respond'}, (msg)->
-      msg.reply 'in foo read ticket'
+      msg.reply 'in test read ticket'
+
   afterEach ->
     @room.destroy()
 
@@ -57,104 +60,280 @@ describe 'basic enterprise tests', ->
         [ 'hubot', '@alice in test read issue' ]
       ]
 
-  it 'register default project naming', ->
+  it 'register default listener option (respond)', ->
     @room.robot.e.create {verb: 'read',
-    help: 'read ticket', type: 'hear'}, (msg)->
-      msg.reply 'in enterprise read'
-    @room.user.say('alice', 'enterprise read jj').then =>
+    help: 'read ticket'}, (msg)->
+      msg.reply 'in test read'
+    @room.user.say('alice', '@hubot test read jj').then =>
       expect(@room.messages).to.eql [
-        [ 'alice', 'enterprise read jj' ],
-        [ 'hubot', '@alice in enterprise read' ]
+        [ 'alice', '@hubot test read jj' ],
+        [ 'hubot', '@alice in test read' ]
       ]
 
-  it 'register default listener option (respond)', ->
-    @room.robot.e.create {product: 'bar', verb: 'read',
-    help: 'read ticket'}, (msg)->
-      msg.reply 'in foo read'
-    @room.user.say('alice', '@hubot bar read jj').then =>
+  it 'verb should exist', ->
+    err = 'none'
+    try
+      @room.robot.enterprise.create {
+      entity: 'ticket', help: 'read ticket', type: 'respond'}, (msg)->
+        msg.reply 'in foo2 read ticket'
+    catch error
+      err = error.message
+    expect(err).to.eql('Cannot register listener for test, no verb passed')
+
+  it 'verb should not contain spaces', ->
+    err = 'none'
+    try
+      @room.robot.enterprise.create {verb: 'with space'
+      entity: 'ticket', help: 'read ticket', type: 'respond'}, (msg)->
+        msg.reply 'in foo2 read ticket'
+    catch error
+      err = error.message
+    expect(err).to.eql('Cannot register listener for test, verb/entity must '+
+      'be a single word')
+
+  it 'entity should not contain spaces', ->
+    err = 'none'
+    try
+      @room.robot.enterprise.create {verb: 'with'
+      entity: 'with space', help: 'read ticket', type: 'respond'}, (msg)->
+        msg.reply 'in foo2 read ticket'
+    catch error
+      err = error.message
+    expect(err).to.eql('Cannot register listener for test, verb/entity must '+
+      'be a single word')
+
+  # test for backward compatibility robot.enterprise -> robot.e
+  it 'check backward compatibility for robot.enterprise', ->
+    @room.robot.enterprise.create {verb: 'read',
+    entity: 'ticket', help: 'read ticket', type: 'respond'}, (msg)->
+      msg.reply 'in test read ticket'
+    @room.user.say('alice', '@hubot test read ticket').then =>
       expect(@room.messages).to.eql [
-        [ 'alice', '@hubot bar read jj' ],
-        [ 'hubot', '@alice in foo read' ]
+        [ 'alice', '@hubot test read ticket' ],
+        [ 'hubot', '@alice in test read ticket' ]
       ]
+
+  # test backward compatibility for call set {product, action}
+  it 'check backward compatibility for {product, action}', ->
+    @room.robot.e.create {action: 'read',
+    help: 'read ticket', type: 'respond'}, (msg)->
+      msg.reply 'in test read'
+    @room.user.say('alice', '@hubot test read').then =>
+      expect(@room.messages).to.eql [
+        [ 'alice', '@hubot test read' ],
+        [ 'hubot', '@alice in test read' ]
+      ]
+
+describe 'help tests', ->
+
+  cb = (msg) ->
+    msg.reply 'here'
+
+  beforeEach ->
+    @room = helper.createRoom()
+    @room.robot.e.registerIntegration({name: 'test',
+    short_desc: 'short tests desc', long_desc: 'long tests desc'})
+
+    @room.robot.e.create {action: 'read',
+    help: 'read ticket', type: 'respond'}, cb
+
+    @room.robot.e.create {action: 'create', entity: 'ticket',
+    regex_suffix: {optional: false}, help: 'help 1'}, cb
+
+    @room.robot.e.create {action: 'delete', entity: 'ticket',
+    regex_suffix: {re: "hello (.*)", optional: true}, help: 'help 2'}, cb
+
+    @room.robot.e.create {action: 'delete', entity: 'ticket',
+    regex_suffix: {re: "world (.*)", optional: true}, help: 'help 2_w'}, cb
+
+    @room.robot.e.create {action: 'delete', regex_suffix: {optional: false}}, cb
+
+    @room.robot.e.create {action: 'delete', entity: 'issue',
+    regex_suffix: {optional: false}, help: 'help 3'}, cb
+
+
+
+  afterEach ->
+    @room.destroy()
 
   it 'help general', ->
     @room.user.say('alice', '@hubot enterprise').then =>
       expect(@room.messages).to.eql [
         [ 'alice', '@hubot enterprise' ],
         [ 'hubot', '@alice help for hubot enterprise:\n'+
-        '@hubot test update ticket: update ticket\n'+
-        'test read issue: read ticket\n'+
-        '@hubot foo read ticket: read ticket' ]
+        'Enterprise integrations list:\n'+
+        '\t-test: short tests desc\n' ]
       ]
 
-  it 'help specific', ->
-    @room.user.say('alice', '@hubot enterprise foo').then =>
+  it 'help integration', ->
+    @room.user.say('alice', '@hubot enterprise test').then =>
       expect(@room.messages).to.eql [
-        [ 'alice', '@hubot enterprise foo' ],
+        [ 'alice', '@hubot enterprise test' ],
         [ 'hubot', '@alice help for hubot enterprise:\n'+
-        '@hubot foo read ticket: read ticket' ]
+        '*test* Integration: short tests desc\n'+
+        '- *Verbs:* read, create, delete\n'+
+        '- *Description:*\n'+
+        'long tests desc\n' ]
       ]
 
-  it 'help none existing', ->
-    @room.user.say('alice', '@hubot enterprise bar').then =>
+  it 'help verb', ->
+    @room.user.say('alice', '@hubot enterprise test delete').then =>
       expect(@room.messages).to.eql [
-        [ 'alice', '@hubot enterprise bar' ],
+        [ 'alice', '@hubot enterprise test delete' ],
         [ 'hubot', '@alice help for hubot enterprise:\n'+
-        'there is no such integration bar' ]
+        'calls for *test delete*\n'+
+        '- *Entities*: ticket, issue\n'+
+        '- *Calls: *\n'+
+        '\t- hubot test delete\n' ]
       ]
 
-  it 'verb should exist', ->
-    err = 'none'
-    try
-      @room.robot.enterprise.create {product: 'foo2',
-      entity: 'ticket', help: 'read ticket', type: 'respond'}, (msg)->
-        msg.reply 'in foo2 read ticket'
-    catch error
-      err = error.message
-    expect(err).to.eql('Cannot register listener for foo2, no verb passed')
-
-  it 'verb should not contain spaces', ->
-    err = 'none'
-    try
-      @room.robot.enterprise.create {product: 'foo2', verb: 'with space'
-      entity: 'ticket', help: 'read ticket', type: 'respond'}, (msg)->
-        msg.reply 'in foo2 read ticket'
-    catch error
-      err = error.message
-    expect(err).to.eql('Cannot register listener for foo2, verb/entity must '+
-      'be a single word')
-
-  it 'entity should not contain spaces', ->
-    err = 'none'
-    try
-      @room.robot.enterprise.create {product: 'foo2', verb: 'with'
-      entity: 'with space', help: 'read ticket', type: 'respond'}, (msg)->
-        msg.reply 'in foo2 read ticket'
-    catch error
-      err = error.message
-    expect(err).to.eql('Cannot register listener for foo2, verb/entity must '+
-      'be a single word')
-
-  # test for backward compatibility robot.enterprise -> robot.e
-  it 'check backward compatibility for robot.enterprise', ->
-    @room.robot.enterprise.create {product: 'foo2', verb: 'read',
-    entity: 'ticket', help: 'read ticket', type: 'respond'}, (msg)->
-      msg.reply 'in foo2 read ticket'
-    @room.user.say('alice', '@hubot foo2 read ticket').then =>
+  it 'help entity', ->
+    @room.user.say('alice', '@hubot enterprise test delete ticket').then =>
       expect(@room.messages).to.eql [
-        [ 'alice', '@hubot foo2 read ticket' ],
-        [ 'hubot', '@alice in foo2 read ticket' ]
+        [ 'alice', '@hubot enterprise test delete ticket' ],
+        [ 'hubot', '@alice help for hubot enterprise:\n'+
+        'calls for *test delete ticket*\n'+
+        '\t- hubot test delete ticket(?: hello (.*))?: help 2\n'+
+        '\t- hubot test delete ticket(?: world (.*))?: help 2_w\n' ]
       ]
 
-  # test backward compatibility for call set {product, action}
-  it 'check backward compatibility for {product, action}', ->
-    @room.robot.e.create {product: 'foo2', action: 'read',
-    help: 'read ticket', type: 'respond'}, (msg)->
-      msg.reply 'in foo2 read'
-    @room.user.say('alice', '@hubot foo2 read').then =>
+  it 'help none existing itegration', ->
+    @room.user.say('alice', '@hubot enterprise cow').then =>
       expect(@room.messages).to.eql [
-        [ 'alice', '@hubot foo2 read' ],
-        [ 'hubot', '@alice in foo2 read' ]
+        [ 'alice', '@hubot enterprise cow' ],
+        [ 'hubot', '@alice help for hubot enterprise:\n'+
+        'there is no such integration *cow*' ]
+      ]
+
+  it 'help non-existing verb', ->
+    @room.user.say('alice', '@hubot enterprise test remove dog').then =>
+      expect(@room.messages).to.eql [
+        [ 'alice', '@hubot enterprise test remove dog' ],
+        [ 'hubot', '@alice help for hubot enterprise:\n'+
+        'there is no such verb *remove* for integration *test*' ]
+      ]
+
+  it 'help none existing entity', ->
+    @room.user.say('alice', '@hubot enterprise test delete cat').then =>
+      expect(@room.messages).to.eql [
+        [ 'alice', '@hubot enterprise test delete cat' ],
+        [ 'hubot', '@alice help for hubot enterprise:\n'+
+        'there is no such entity *cat* for verb *delete* of *test*' ]
+      ]
+
+
+describe 'registerIntegration tests', ->
+
+  cb = (msg) ->
+    msg.reply "here"
+  beforeEach ->
+    @room = helper.createRoom()
+
+  afterEach ->
+    @room.destroy()
+
+  it 'cannot call robot.e.create() without robot.e.registerIntegration()', ->
+    err = 'none'
+    try
+      @room.robot.e.create {verb: 'update', entity: 'ticket'
+      help: 'update ticket', type: 'respond'}, (msg)->
+        msg.reply 'in test update ticket'
+    catch error
+      err = error.message
+    expect(err).to.eql('cannot register listener for enterprise, integration '+
+      'enterprise not registered, please use robot.e.registerIntegration')
+
+  # disabled untill keyword for help will be changed from `enterprise`
+  it 'register integration: name auto discover', ->
+    # @room.robot.e.registerIntegration({short_desc: 'short tests desc',
+    # long_desc: 'long tests desc'})
+
+    # @room.robot.e.create {action: 'read', help: 'read ticket', type: 'respond'},
+    #   cb
+    #
+    # @room.user.say('alice', '@hubot enterprise read').then =>
+    #   expect(@room.messages).to.eql [
+    #     [ 'alice', '@hubot enterprise read' ],
+    #     [ 'hubot', '@alice here' ]
+    #   ]
+
+  it 'register integration custom name', ->
+    @room.robot.e.registerIntegration({name: 'test',
+    short_desc: 'short tests desc', long_desc: 'long tests desc'})
+
+    @room.robot.e.create {action: 'read', help: 'read ticket', type: 'respond'},
+     cb
+
+    @room.user.say('alice', '@hubot test read').then =>
+      expect(@room.messages).to.eql [
+        [ 'alice', '@hubot test read' ],
+        [ 'hubot', '@alice here' ]
+      ]
+
+  it 'cannot register integration twice', ->
+    @room.robot.e.registerIntegration({short_desc: 'short tests desc',
+    long_desc: 'long tests desc'})
+
+    err = 'none'
+    try
+      @room.robot.e.registerIntegration({short_desc: 'short tests desc',
+      long_desc: 'long tests desc'})
+    catch error
+      err = error.message
+    expect(err).to.eql('Integration enterprise already registred!')
+
+  it 'cannot register integration twice even under another name', ->
+    @room.robot.e.registerIntegration({name: 'test',
+    short_desc: 'short tests desc', long_desc: 'long tests desc'})
+
+    err = 'none'
+    try
+      @room.robot.e.registerIntegration({name: 'test2',
+      short_desc: 'short tests desc', long_desc: 'long tests desc'})
+    catch error
+      err = error.message
+    expect(err).to.eql('Integration enterprise already registred!')
+
+  it 'name must be single word', ->
+    err = 'none'
+    try
+      @room.robot.e.registerIntegration({name: 'test2 hh',
+      short_desc: 'short tests desc', long_desc: 'long tests desc'})
+    catch error
+      err = error.message
+    expect(err).to.eql('Cannot register integration for enterprise, '+
+    'name alias must be a single word')
+
+  it 'name must be a string', ->
+    err = 'none'
+    try
+      @room.robot.e.registerIntegration({name: true,
+      short_desc: 'short tests desc', long_desc: 'long tests desc'})
+    catch error
+      err = error.message
+    expect(err).to.eql('Cannot register integration for enterprise, '+
+      'name alias must be a string')
+
+  it 'short_desc is mandatory', ->
+    it 'name must be single word', ->
+      err = 'none'
+      try
+        @room.robot.e.registerIntegration({name: 'test2 hh',
+        long_desc: 'long tests desc'})
+      catch error
+        err = error.message
+      expect(err).to.eql('Cannot register a listener, info.regex_suffix.re '+
+        'must be a string or undefined')
+
+  it 'long desc is optional, if not exists: assigning short desc', ->
+    @room.robot.e.registerIntegration({name: 'test',
+    short_desc: 'short tests desc'})
+    @room.user.say('alice', '@hubot enterprise').then =>
+      expect(@room.messages).to.eql [
+        [ 'alice', '@hubot enterprise' ],
+        [ 'hubot', '@alice help for hubot enterprise:\n'+
+        'Enterprise integrations list:\n'+
+        '\t-test: short tests desc\n' ]
       ]
 
 describe 'listener extra object tests', ->
@@ -167,9 +346,10 @@ describe 'listener extra object tests', ->
 
   beforeEach ->
     @room = helper.createRoom()
+    @room.robot.e.registerIntegration({name: 'foo', short_desc: 'suffix tests'})
 
   # common create object, to extend
-  common_create = {product: 'foo', verb: 'verb', entity: 'entity'}
+  common_create = { verb: 'verb', entity: 'entity'}
 
   afterEach ->
     @room.destroy()

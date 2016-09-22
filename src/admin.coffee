@@ -82,6 +82,10 @@ module.exports = (robot) ->
       _robot.logger.debug e
       msg.reply 'Error: '+e
 
+  # register module
+  robot.e.registerIntegration({short_desc: "Admin module for hubot enterprise",
+  long_desc: "Admin module contain number of calls for Chat platform "+
+  "managing", name: "admin"})
   # register hubot enterprise functions
   robot.e.create {product: 'admin', verb: 'archive', entity: 'channel',
   help: '<this|#name>- archive specific channel', type: 'respond'},

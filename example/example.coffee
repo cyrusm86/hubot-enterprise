@@ -20,13 +20,14 @@
 #  SOFTWARE.
 
 module.exports = (robot) ->
-
-  #check if hubot-enterprise is loaded
+  # check that hubot-enterprise is loaded
   if not robot.e
     robot.logger.error 'hubot-enterprise not present, cannot run'
-    robot.send room: 'general', '@channel ERROR: Cannot '+
-    'initialize hubot-test module, hubot-enterprise is not installed'
     return
+
+  # register integration
+  robot.e.registerIntegration({short_desc: "example integration"})
+
   robot.logger.info 'hubot-test initialized'
   robot.send room: 'general', '@channel hubot-test initialized, hubot '+
   'enterprise is present'
@@ -34,7 +35,7 @@ module.exports = (robot) ->
   #register some functions
   robot.e.create {verb: 'create', entity: 'ticket'
   help: 'create ticket', type: 'respond',
-  extra: '([0-9]+)([dDhHmMsS]) ?(.*)',}, (msg)->
+  regex_suffix: {re: '([0-9]+)([dDhHmMsS]) ?(.*)', optional: false},}, (msg)->
     robot.logger.debug  'in test create ticket'
     msg.reply 'in test create ticket'
 

@@ -35,20 +35,30 @@ insight.optOut = process.env.HUBOT_HE_OPT_OUT || false
 insight.track 'HE', 'start'
 
 module.exports = (robot) ->
+
+  # Registrar object- store all integrations meta and info
+  # structure: https://github.com/eedevops/he-design/blob/master/README.md#1-roboteregisterintegrationmetadata-authentication
+  # automatically create with admin, admin will NEVER have auth because it's not a real module
+  registrar = {apps: {}, mapping: {}}
+
   # create e (enterprise object on robot)
   robot.e = {}
   # `mount` adapter object
   robot.e.adapter = new (require __dirname+
     '/../lib/adapter_core')(robot)
-  # create array for HE integrations to store calls for help
-  robot.e.help = []
 
   # create common strings object
-  robot.e.commons = {
+  # TODO: use Cha to display
+  commons = {
     no_such_integration: (product) ->
-      return "there is no such integration #{product}"
+      return "there is no such integration *#{product}*"
+    no_such_verb: (product, verb) ->
+      return "there is no such verb *#{verb}* for integration *#{product}*"
+    no_such_entity: (product, verb, entity) ->
+      return "there is no such entity *#{entity}* for verb *#{verb}* "+
+        "of *#{product}*"
     help_msg: (content) ->
-      return "help for hubot enterprise:"+content
+      return "help for hubot enterprise:\n"+content
   }
 
   # load scripts to robot
@@ -78,7 +88,7 @@ module.exports = (robot) ->
   # build extra part of the regex
   #
   # info: info object from build_enterprise_regex
-  #  extra: extra element
+  #  regex_suffix: extra element
   #    optional: true/false- should it be optional
   #    re: string that representing the regex (optional)
   build_extra_re = (info) ->
@@ -116,9 +126,36 @@ module.exports = (robot) ->
     else
       return ''
 
+  find_alias_by_name = (integration_name) ->
+    return _.findKey(registrar.mapping, (o) ->
+      return o == integration_name)
+
+  registrar_add_call = (info, integration_name) ->
+    mapping_name = find_alias_by_name(integration_name)
+    verbs = registrar.apps[integration_name].verbs
+    # init verb if not exists
+    verbs[info.verb] = verbs[info.verb] || {flat: {}, entities: {}}
+    verb = registrar.apps[integration_name].verbs[info.verb]
+    # for calls with entity
+    if info.entity
+      # init entity if not exists
+      verb.entities[info.entity] = verb.entities[info.entity] || {}
+      # basic check for duplicates
+      if verb.entities[info.entity][info.regex]
+        throw new Error("Cannot register listener for #{mapping_name}, "+
+          "similar one already registred, Info: "+JSON.stringify(info))
+      verb.entities[info.entity][info.regex] = info
+    else
+      # register calls without entity
+      # basic check for duplicates
+      if verb.flat[info.regex]
+        throw new Error("Cannot register listener for #{mapping_name}, "+
+          "similar one already registred, Info: "+JSON.stringify(info))
+      verb.flat[info.regex] = info
+     # console.log('REGISTRAR', JSON.stringify(registrar))
+
   # build regex for enterprise calls and register to HE help module
   # info: list of the function info:
-  #  product: product name- OPTIONAL (lib will determin product by itself)
   #  verb: verb to prerform
   #  entity: entity for verb to operate (optional)
   #  extra: extra regex (after the first 2), default: "[ ]?(.*)?"
@@ -132,7 +169,12 @@ module.exports = (robot) ->
     if info.action
       info.verb = info.action
       delete info.action
-    info.product = info.product || integration_name
+    info.product = find_alias_by_name(integration_name)
+    # do not accept unregistered integrations
+    if !registrar.apps[integration_name]
+      throw new Error("cannot register listener for #{integration_name}, "+
+        "integration #{integration_name} not registered, please use "+
+        "robot.e.registerIntegration")
     if !info.verb
       throw new Error("Cannot register listener for #{info.product}, "+
         "no verb passed")
@@ -146,8 +188,49 @@ module.exports = (robot) ->
     if info.entity
       re_string += " #{info.entity}"
     re_string+= "#{info.regex}$"
-    robot.e.help.push(info)
+    registrar_add_call(info, integration_name)
     return new RegExp(re_string, 'i')
+
+  # register integration with hubot-enterprise
+  #
+  # metadata:
+  #  name: (optional) Integration alias (how the chat USER will call it)
+  #  short_desc: short description of the integration
+  #  long_desc: (optional) long description of the integration
+  # authentication:
+  #  type: one of the allowed type in auth module, e.g: 'username_password'
+  #  options: auth options corresponding to selected auth.type
+  robot.e.registerIntegration = (metadata, authentication) ->
+    integration_name = find_integration_name()
+    if registrar.apps[integration_name]
+      throw new Error("Integration #{integration_name} already registred!")
+    if (typeof metadata.name == "string")
+      if metadata.name.includes(" ")
+        throw new Error("Cannot register integration for #{integration_name}, "+
+          "name alias must be a single word")
+      else
+        registrar.mapping[metadata.name] = integration_name
+    else if _.includes(Object.keys(metadata), 'name')
+      throw new Error("Cannot register integration for #{integration_name}, "+
+        "name alias must be a string")
+    else
+      registrar.mapping[integration_name] = integration_name
+    # check input
+    if !metadata.short_desc
+      throw new Error('at least medatada.short_desc must be specified')
+    metadata.long_desc = metadata.long_desc || metadata.short_desc
+    # check that auth existing and correct
+    # TODO: check the auth type existing in auth Module auth.types enum
+    # TODO: check that options corresponds with selected Auth type
+    #   in auth.type.options
+
+    if authentication && !authentication.type
+      throw new Error('Must provide authentication type!')
+    registrar.apps[integration_name] = {
+      metadata: metadata,
+      auth: authentication || {},
+      verbs: {}
+    }
 
   # register a listener function with hubot-enterprise
   #
@@ -156,7 +239,9 @@ module.exports = (robot) ->
   #  verb: verb to prerform
   #  entity: entity for verb to operate (optional)
   #  type: hear/respond
-  #  extra: extra regex (after the first 2), default: "[ ]?(.*)?"
+  #  regex_suffix: (optional) extra element
+  #    optional: (optional) true/false- should it be optional
+  #    re: (optional) string that representing the regex (optional)
   #  help: help string
   # callback: function to run
   #
@@ -164,33 +249,77 @@ module.exports = (robot) ->
   # robot[info.type]
   #  /#{info.product} #{info.verb} #{info.entity} #{info.extra}/i
   robot.e.create = (info, callback) ->
+    if typeof callback != 'function'
+      throw new Error('callback is not a function but a '+(typeof callback))
+    info.cb = callback
     re = build_enterprise_regex(info, find_integration_name())
     robot.logger.debug("HE registering call:\n"+
       "\trobot.#{info.type} #{re.toString()}")
     robot[info.type] re, (msg) ->
+      # TODO: add auth check here, use bluebird promises if async needed
       callback(msg, robot)
 
-  # return enterprise help to string
-  robot.e.show_help = (product) ->
+  # return enterprise help as string
+  #
+  # product: product (or alias)
+  # verb: verb
+  # entity: entity
+  #
+  robot.e.show_help = (product, verb, entity) ->
+    # TODO: use Cha to display
+    # TODO: refactor based on UI/UX team specs
     res = ""
-    for elem in robot.e.help
-      if !product || elem.product == product.trim()
-        command = elem.product
-        if elem.verb
-          command += " #{elem.verb}"
-        if elem.entity
-          command += " #{elem.entity}"
-        res += "\n"+(if elem.type == "respond" then "@#{robot.name} " else "" )+
-        "#{command}: #{elem.help}"
-    if !res
-      product = if product then product.trim() else ""
-      res = "\n"+robot.e.commons.no_such_integration(product)
-    res = robot.e.commons.help_msg(res)
+    if product
+      if !registrar.mapping[product] ||
+      !registrar.apps[registrar.mapping[product]]
+        res = commons.no_such_integration(product)
+      else
+        reg_product = registrar.apps[registrar.mapping[product]]
+        if verb
+          if !reg_product.verbs[verb]
+            res = commons.no_such_verb(product, verb)
+          else
+            reg_verb = reg_product.verbs[verb]
+            if entity
+              if !reg_verb.entities[entity]
+                res = commons.no_such_entity(product, verb, entity)
+              else
+                res = "calls for *#{product} #{verb} #{entity}*\n"
+                for k, v of reg_verb.entities[entity]
+                  res += "\t- "
+                  if v.type == 'respond'
+                    res += "#{robot.name} "
+                  res +="#{product} #{verb} #{entity}#{k}"+
+                  (if v.help then ': '+v.help else '')+"\n"
+            else
+              res += "calls for *#{product} #{verb}*\n"
+              entities = Object.keys(reg_verb.entities)
+              flat = Object.keys(reg_verb.flat)
+              if entities.length > 0
+                res += "- *Entities*: "+entities.join(', ')+"\n"
+              if flat.length > 0
+                res += "- *Calls: *\n"
+                for k, v of reg_verb.flat
+                  res += "\t- "
+                  if v.type == 'respond'
+                    res += "#{robot.name} "
+                  res +="#{product} #{verb}#{k}"+
+                    (if v.help then ': '+v.help else '')+"\n"
+        else
+          vrbs = Object.keys(reg_product.verbs).join(', ')
+          res += "*#{product}* Integration: "+
+            "#{reg_product.metadata.short_desc}\n- *Verbs:* #{vrbs}\n"+
+            "- *Description:*\n#{reg_product.metadata.long_desc}\n"
+    else
+      res += "Enterprise integrations list:\n"
+      for alias, app of registrar.mapping
+        res += "\t-#{alias}: #{registrar.apps[app].metadata.short_desc}\n"
+    res = commons.help_msg(res)
     return res
 
   # listener for help message
-  robot.respond /enterprise(.*)/i, (msg) ->
-    msg.reply robot.e.show_help(msg.match[1])
+  robot.respond /enterprise[ ]?(\w+)?[ ]?(\w+)?[ ]?(\w+)?/i, (msg) ->
+    msg.reply robot.e.show_help(msg.match[1], msg.match[2], msg.match[3])
 
   # robot.enterprise as alias to robot.e for backward compatibility
   robot.enterprise = robot.e
