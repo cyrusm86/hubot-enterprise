@@ -20,6 +20,7 @@
 #  SOFTWARE.
 
 _ = require 'lodash'
+Matcher = require 'did-you-mean'
 
 class Help
 
@@ -30,6 +31,21 @@ class Help
     @robot = robot
     @commons = new (require __dirname+'/../lib/commons')()
     @help_words = help_words
+  # give best matched word
+  #
+  #  words_arr: array of words to match from
+  #  word: word to match
+  #  threshold: minimal score to show (levenshtein algorythm threshold)
+  #
+  fuzzy_match: (words_arr, word, threshold = 2) ->
+    # Create a matcher with a list of values
+    matcher = new Matcher(words_arr.join(' ')).setThreshold(threshold)
+    .ignoreCase()
+    # Get the closest match
+    if (word = matcher.get(word))
+      return @commons.did_you_mean(word)
+    else
+      return ''
 
   # process help and show message (accept hubot middleware)
   #  msg: hubot message object (context.response)
@@ -44,14 +60,14 @@ class Help
       @robot.logger.debug 'msg.message.text: '+msg.message.text
       # if found integration: display only HE help
       if (help.found_app == true)
-        @robot.logger.debug 'XXX KILL MESSAGE CHAIN'
+        @robot.logger.debug 'Help: KILL MESSAGE CHAIN'
         msg.message.finish()
       else
         # changing current keyword to help: for hubot-help to work
         msg.message.text = msg.message.text.replace(msg.match[1], 'help')
         help.text = help.text+"\nHubot help:\n"
       @robot.logger.debug 'Showing enterprise help'
-      msg.reply help.text
+      msg.reply @commons.help_msg(help.text)
 
   # return enterprise help as string
   #
@@ -69,18 +85,24 @@ class Help
     if product
       if !registrar.mapping[product] ||
       !registrar.apps[registrar.mapping[product]]
-        res.text = @commons.no_such_integration(product)
+        res.text = @commons.no_such_integration(product)+
+          @fuzzy_match(Object.keys(registrar.mapping), product)+"\n"+
+          @show_help(registrar).text
       else
         res.found_app = true
         reg_product = registrar.apps[registrar.mapping[product]]
         if verb
           if !reg_product.verbs[verb]
-            res.text = @commons.no_such_verb(product, verb)
+            res.text = @commons.no_such_verb(product, verb)+
+              @fuzzy_match(Object.keys(reg_product.verbs), verb)+"\n"+
+              @show_help(registrar, product).text
           else
             reg_verb = reg_product.verbs[verb]
             if entity
               if !reg_verb.entities[entity]
-                res.text = @commons.no_such_entity(product, verb, entity)
+                res.text = @commons.no_such_entity(product, verb, entity)+
+                  @fuzzy_match(Object.keys(reg_verb.entities), entity)+"\n"+
+                  @show_help(registrar, product, verb).text
               else
                 res.text = "calls for *#{product} #{verb} #{entity}*\n"
                 for k, v of reg_verb.entities[entity]
@@ -115,7 +137,6 @@ class Help
       for alias, app of registrar.mapping
         res.text +=
           "\t-#{alias}: #{registrar.apps[app].metadata.short_desc}\n"
-    res.text = @commons.help_msg(res.text)
     return res
 
 module.exports = Help

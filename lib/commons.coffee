@@ -28,6 +28,8 @@ class Commons
   no_such_entity: (product, verb, entity) ->
     return "there is no such entity *#{entity}* for verb *#{verb}* "+
       "of *#{product}*"
+  did_you_mean: (name) ->
+    return ", did you mean *#{name}*?"
   help_msg: (content) ->
     return "help for hubot enterprise:\n"+content
 

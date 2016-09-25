@@ -201,29 +201,39 @@ describe 'help tests', ->
         '\t- hubot test delete ticket(?: world (.*))?: help 2_w\n' ]
       ]
 
-  it 'help none existing itegration', ->
+  it 'help n/a itegration', ->
     @room.user.say('alice', '@hubot help cow').then =>
       expect(@room.messages).to.eql [
         [ 'alice', '@hubot help cow' ],
         [ 'hubot', '@alice help for hubot enterprise:\n'+
-        'there is no such integration *cow*'+
+        'there is no such integration *cow*\n'+
+        'Enterprise integrations list:\n'+
+        '\t-test: short tests desc\n'+
         '\nHubot help:\n' ]
       ]
 
-  it 'help non-existing verb', ->
+  it 'help n/a verb', ->
     @room.user.say('alice', '@hubot help test remove dog').then =>
       expect(@room.messages).to.eql [
         [ 'alice', '@hubot help test remove dog' ],
         [ 'hubot', '@alice help for hubot enterprise:\n'+
-        'there is no such verb *remove* for integration *test*' ]
+        'there is no such verb *remove* for integration *test*\n'+
+        '*test* Integration: short tests desc\n'+
+        '- *Verbs:* read, create, delete\n'+
+        '- *Description:*\n'+
+        'long tests desc\n' ]
       ]
 
-  it 'help none existing entity', ->
+  it 'help n/a entity', ->
     @room.user.say('alice', '@hubot help test delete cat').then =>
       expect(@room.messages).to.eql [
         [ 'alice', '@hubot help test delete cat' ],
         [ 'hubot', '@alice help for hubot enterprise:\n'+
-        'there is no such entity *cat* for verb *delete* of *test*' ]
+        'there is no such entity *cat* for verb *delete* of *test*\n'+
+        'calls for *test delete*\n'+
+        '- *Entities*: ticket, issue\n'+
+        '- *Calls: *\n'+
+        '\t- hubot test delete\n' ]
       ]
 
 
@@ -254,6 +264,19 @@ describe 'help tests', ->
         [ 'hubot', '@alice help for hubot enterprise:\n'+
         'calls for *test read me*\n'+
         '\t- hubot test read me aa hello world: read ticket\n' ]
+      ]
+
+  it 'help show fuzzy match', ->
+    @room.user.say('alice', '@hubot help test delere').then =>
+      expect(@room.messages).to.eql [
+        [ 'alice', '@hubot help test delere' ],
+        [ 'hubot', '@alice help for hubot enterprise:\n'+
+        'there is no such verb *delere* for integration *test*, '+
+        'did you mean *delete*?\n'+
+        '*test* Integration: short tests desc\n'+
+        '- *Verbs:* read, create, delete\n'+
+        '- *Description:*\n'+
+        'long tests desc\n' ]
       ]
 
 describe 'registerIntegration tests', ->
