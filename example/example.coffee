@@ -27,14 +27,11 @@ module.exports = (robot) ->
 
   # register integration
   robot.e.registerIntegration({short_desc: "example integration"})
-
   robot.logger.info 'hubot-test initialized'
-  robot.send room: 'general', '@channel hubot-test initialized, hubot '+
-  'enterprise is present'
 
   #register some functions
   robot.e.create {verb: 'create', entity: 'ticket'
-  help: 'create ticket', type: 'respond',
+  help: 'create ticket', type: 'respond', example: '55g ticketName',
   regex_suffix: {re: '([0-9]+)([dDhHmMsS]) ?(.*)', optional: false},}, (msg)->
     robot.logger.debug  'in test create ticket'
     msg.reply 'in test create ticket'

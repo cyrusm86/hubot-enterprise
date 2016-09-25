@@ -33,7 +33,12 @@ insight = new Insight(
 
 insight.optOut = process.env.HUBOT_HE_OPT_OUT || false
 insight.track 'HE', 'start'
-reserverd_apps = [ 'info', 'help' ]
+help_words = [ 'info', 'menu', 'home', '\\?', 'support', 'help']
+# contatination of help
+reserverd_apps = help_words.concat([])
+# HACK: adding 'enterprise' keyword after taking reserved apps, to avoid errors
+# on this (enterprise) integration
+help_words.push('enterprise')
 module.exports = (robot) ->
 
   # Registrar object- store all integrations meta and info
@@ -161,6 +166,7 @@ module.exports = (robot) ->
   #  extra: extra regex (after the first 2), default: "[ ]?(.*)?"
   #  type: hear/respond
   #  help: help message for call
+  #  example: parameters usage example to be showed in help
   #
   # returns regex:
   #  /#{info.product} #{info.verb} #{info.entity} #{info.extra}/i
@@ -249,6 +255,7 @@ module.exports = (robot) ->
   #    optional: (optional) true/false- should it be optional
   #    re: (optional) string that representing the regex (optional)
   #  help: help string
+  #  example: parameters usage example to be showed in help
   # callback: function to run
   #
   # will register function with the following regex:
@@ -274,60 +281,91 @@ module.exports = (robot) ->
   robot.e.show_help = (product, verb, entity) ->
     # TODO: use Cha to display
     # TODO: refactor based on UI/UX team specs
-    res = ""
+    res =
+      text: ""
+      found_app: false
     if product
       if !registrar.mapping[product] ||
       !registrar.apps[registrar.mapping[product]]
-        res = commons.no_such_integration(product)
+        res.text = commons.no_such_integration(product)
       else
+        res.found_app = true
         reg_product = registrar.apps[registrar.mapping[product]]
         if verb
           if !reg_product.verbs[verb]
-            res = commons.no_such_verb(product, verb)
+            res.text = commons.no_such_verb(product, verb)
           else
             reg_verb = reg_product.verbs[verb]
             if entity
               if !reg_verb.entities[entity]
-                res = commons.no_such_entity(product, verb, entity)
+                res.text = commons.no_such_entity(product, verb, entity)
               else
-                res = "calls for *#{product} #{verb} #{entity}*\n"
+                res.text = "calls for *#{product} #{verb} #{entity}*\n"
                 for k, v of reg_verb.entities[entity]
-                  res += "\t- "
+                  res.text += "\t- "
                   if v.type == 'respond'
-                    res += "#{robot.name} "
-                  res +="#{product} #{verb} #{entity}#{k}"+
+                    res.text += "#{robot.name} "
+                  res.text +="#{product} #{verb} #{entity}"+
+                  (if v.example then " #{v.example}" else k)+
                   (if v.help then ': '+v.help else '')+"\n"
             else
-              res += "calls for *#{product} #{verb}*\n"
+              res.text += "calls for *#{product} #{verb}*\n"
               entities = Object.keys(reg_verb.entities)
               flat = Object.keys(reg_verb.flat)
               if entities.length > 0
-                res += "- *Entities*: "+entities.join(', ')+"\n"
+                res.text += "- *Entities*: "+entities.join(', ')+"\n"
               if flat.length > 0
-                res += "- *Calls: *\n"
+                res.text += "- *Calls: *\n"
                 for k, v of reg_verb.flat
-                  res += "\t- "
+                  res.text += "\t- "
                   if v.type == 'respond'
-                    res += "#{robot.name} "
-                  res +="#{product} #{verb}#{k}"+
+                    res.text += "#{robot.name} "
+                  res.text +="#{product} #{verb}"+
+                    (if v.example then " #{v.example}" else k)+
                     (if v.help then ': '+v.help else '')+"\n"
         else
           vrbs = Object.keys(reg_product.verbs).join(', ')
-          res += "*#{product}* Integration: "+
+          res.text += "*#{product}* Integration: "+
             "#{reg_product.metadata.short_desc}\n- *Verbs:* #{vrbs}\n"+
             "- *Description:*\n#{reg_product.metadata.long_desc}\n"
     else
-      res += "Enterprise integrations list:\n"
+      res.text += "Enterprise integrations list:\n"
       for alias, app of registrar.mapping
-        res += "\t-#{alias}: #{registrar.apps[app].metadata.short_desc}\n"
-    res = commons.help_msg(res)
+        res.text += "\t-#{alias}: #{registrar.apps[app].metadata.short_desc}\n"
+    res.text = commons.help_msg(res.text)
     return res
 
-  # listener for help message
-  robot.respond /(enterprise|info)[ ]?(\w+)?[ ]?(\w+)?[ ]?(\w+)?/i, (msg) ->
-    msg.reply robot.e.show_help(msg.match[2], msg.match[3], msg.match[4])
+  # process help and show message (accept hubot middleware)
+  #  msg: hubot message object (context.response)
+  processHelp = (msg) ->
+    # build help regex from help workds array
+    help_re = robot.respondPattern(new RegExp("("+help_words.join('|')+")"+
+      "[ ]?(\\w+)?[ ]?(\\w+)?[ ]?(\\w+)?", 'i'))
+    if (msg.match = msg.message.text.match(help_re))
+      help = robot.e.show_help(msg.match[2], msg.match[3], msg.match[4])
+      robot.logger.debug help
+      robot.logger.debug 'msg.message.text: '+msg.message.text
+      # if found integration: display only HE help
+      if (help.found_app == true)
+        robot.logger.debug 'XXX KILL MESSAGE CHAIN'
+        msg.message.finish()
+      else
+        # changing current keyword to help: for hubot-help to work
+        msg.message.text = msg.message.text.replace(msg.match[1], 'help')
+        help.text = help.text+"\nHubot help:\n"
+      robot.logger.debug 'Showing enterprise help'
+      msg.reply help.text
 
-  # robot.enterprise as alias to robot.e for backward compatibility
+  # main receiveMiddleware
+  robot.receiveMiddleware (context, next, done) ->
+    msg = context.response
+    # continues only if its a standart text message event
+    if !msg?.message?.text
+      return next()
+    # process and show help messages
+    processHelp(msg)
+    return next()
+
   robot.enterprise = robot.e
 
   # load hubot enterprise scripts (not from integrations) after HE loaded

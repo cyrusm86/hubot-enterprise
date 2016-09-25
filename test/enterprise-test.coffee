@@ -137,6 +137,11 @@ describe 'help tests', ->
     @room.robot.e.create {action: 'read',
     help: 'read ticket', type: 'respond'}, cb
 
+    @room.robot.e.create {action: 'read', entity: 'me'
+    regex_suffix: {re: "aa (.*)", optional: false},
+    example: "aa hello world",
+    help: 'read ticket', type: 'respond'}, cb
+
     @room.robot.e.create {action: 'create', entity: 'ticket',
     regex_suffix: {optional: false}, help: 'help 1'}, cb
 
@@ -151,24 +156,23 @@ describe 'help tests', ->
     @room.robot.e.create {action: 'delete', entity: 'issue',
     regex_suffix: {optional: false}, help: 'help 3'}, cb
 
-
-
   afterEach ->
     @room.destroy()
 
   it 'help general', ->
-    @room.user.say('alice', '@hubot info').then =>
+    @room.user.say('alice', '@hubot help').then =>
       expect(@room.messages).to.eql [
-        [ 'alice', '@hubot info' ],
+        [ 'alice', '@hubot help' ],
         [ 'hubot', '@alice help for hubot enterprise:\n'+
         'Enterprise integrations list:\n'+
-        '\t-test: short tests desc\n' ]
+        '\t-test: short tests desc\n'+
+        '\nHubot help:\n' ]
       ]
 
   it 'help integration', ->
-    @room.user.say('alice', '@hubot info test').then =>
+    @room.user.say('alice', '@hubot help test').then =>
       expect(@room.messages).to.eql [
-        [ 'alice', '@hubot info test' ],
+        [ 'alice', '@hubot help test' ],
         [ 'hubot', '@alice help for hubot enterprise:\n'+
         '*test* Integration: short tests desc\n'+
         '- *Verbs:* read, create, delete\n'+
@@ -177,9 +181,9 @@ describe 'help tests', ->
       ]
 
   it 'help verb', ->
-    @room.user.say('alice', '@hubot info test delete').then =>
+    @room.user.say('alice', '@hubot help test delete').then =>
       expect(@room.messages).to.eql [
-        [ 'alice', '@hubot info test delete' ],
+        [ 'alice', '@hubot help test delete' ],
         [ 'hubot', '@alice help for hubot enterprise:\n'+
         'calls for *test delete*\n'+
         '- *Entities*: ticket, issue\n'+
@@ -188,9 +192,9 @@ describe 'help tests', ->
       ]
 
   it 'help entity', ->
-    @room.user.say('alice', '@hubot info test delete ticket').then =>
+    @room.user.say('alice', '@hubot help test delete ticket').then =>
       expect(@room.messages).to.eql [
-        [ 'alice', '@hubot info test delete ticket' ],
+        [ 'alice', '@hubot help test delete ticket' ],
         [ 'hubot', '@alice help for hubot enterprise:\n'+
         'calls for *test delete ticket*\n'+
         '\t- hubot test delete ticket(?: hello (.*))?: help 2\n'+
@@ -198,25 +202,26 @@ describe 'help tests', ->
       ]
 
   it 'help none existing itegration', ->
-    @room.user.say('alice', '@hubot info cow').then =>
+    @room.user.say('alice', '@hubot help cow').then =>
       expect(@room.messages).to.eql [
-        [ 'alice', '@hubot info cow' ],
+        [ 'alice', '@hubot help cow' ],
         [ 'hubot', '@alice help for hubot enterprise:\n'+
-        'there is no such integration *cow*' ]
+        'there is no such integration *cow*'+
+        '\nHubot help:\n' ]
       ]
 
   it 'help non-existing verb', ->
-    @room.user.say('alice', '@hubot info test remove dog').then =>
+    @room.user.say('alice', '@hubot help test remove dog').then =>
       expect(@room.messages).to.eql [
-        [ 'alice', '@hubot info test remove dog' ],
+        [ 'alice', '@hubot help test remove dog' ],
         [ 'hubot', '@alice help for hubot enterprise:\n'+
         'there is no such verb *remove* for integration *test*' ]
       ]
 
   it 'help none existing entity', ->
-    @room.user.say('alice', '@hubot info test delete cat').then =>
+    @room.user.say('alice', '@hubot help test delete cat').then =>
       expect(@room.messages).to.eql [
-        [ 'alice', '@hubot info test delete cat' ],
+        [ 'alice', '@hubot help test delete cat' ],
         [ 'hubot', '@alice help for hubot enterprise:\n'+
         'there is no such entity *cat* for verb *delete* of *test*' ]
       ]
@@ -228,10 +233,28 @@ describe 'help tests', ->
         [ 'alice', '@hubot enterprise' ],
         [ 'hubot', '@alice help for hubot enterprise:\n'+
         'Enterprise integrations list:\n'+
-        '\t-test: short tests desc\n' ]
+        '\t-test: short tests desc\n'+
+        '\nHubot help:\n' ]
       ]
 
+  it 'help respond to `?` keyword', ->
+    @room.user.say('alice', '@hubot ?').then =>
+      expect(@room.messages).to.eql [
+        [ 'alice', '@hubot ?' ],
+        [ 'hubot', '@alice help for hubot enterprise:\n'+
+        'Enterprise integrations list:\n'+
+        '\t-test: short tests desc\n'+
+        '\nHubot help:\n' ]
+      ]
 
+  it 'help show example', ->
+    @room.user.say('alice', '@hubot ? test read me').then =>
+      expect(@room.messages).to.eql [
+        [ 'alice', '@hubot ? test read me' ],
+        [ 'hubot', '@alice help for hubot enterprise:\n'+
+        'calls for *test read me*\n'+
+        '\t- hubot test read me aa hello world: read ticket\n' ]
+      ]
 
 describe 'registerIntegration tests', ->
 
@@ -262,9 +285,9 @@ describe 'registerIntegration tests', ->
     # @room.robot.e.create {action: 'read', help: 'read ticket', type: 'respond'},
     #   cb
     #
-    # @room.user.say('alice', '@hubot info read').then =>
+    # @room.user.say('alice', '@hubot help read').then =>
     #   expect(@room.messages).to.eql [
-    #     [ 'alice', '@hubot info read' ],
+    #     [ 'alice', '@hubot help read' ],
     #     [ 'hubot', '@alice here' ]
     #   ]
 
@@ -339,12 +362,13 @@ describe 'registerIntegration tests', ->
   it 'long desc is optional, if not exists: assigning short desc', ->
     @room.robot.e.registerIntegration({name: 'test',
     short_desc: 'short tests desc'})
-    @room.user.say('alice', '@hubot info').then =>
+    @room.user.say('alice', '@hubot help').then =>
       expect(@room.messages).to.eql [
-        [ 'alice', '@hubot info' ],
+        [ 'alice', '@hubot help' ],
         [ 'hubot', '@alice help for hubot enterprise:\n'+
         'Enterprise integrations list:\n'+
-        '\t-test: short tests desc\n' ]
+        '\t-test: short tests desc\n'+
+        '\nHubot help:\n' ]
       ]
 
   it 'cannot register integration with reserved name', ->
@@ -354,7 +378,8 @@ describe 'registerIntegration tests', ->
       short_desc: 'short tests desc', long_desc: 'long tests desc'})
     catch error
       err = error.message
-    expect(err).to.eql('integration metadata.name cannot have reserved name info')
+    expect(err).to.eql('integration metadata.name cannot have '+
+      'reserved name info')
 
 describe 'listener extra object tests', ->
 
