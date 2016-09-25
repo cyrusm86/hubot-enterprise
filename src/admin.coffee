@@ -70,7 +70,7 @@ module.exports = (robot) ->
     else
       patterns = ['advantage', 'incident']
     if patterns.length == 0
-      msg.reply 'no patterns to archive :disappointed:'
+      msg.reply 'no patterns to archive'
       return
     msg.reply 'archiving channels with pattern: "'+patterns.join('", "')+
       '" older than '+msg.match[1]+timeType+' by '+type
@@ -82,14 +82,18 @@ module.exports = (robot) ->
       _robot.logger.debug e
       msg.reply 'Error: '+e
 
+  # register module
+  robot.e.registerIntegration({short_desc: "Admin module for hubot enterprise",
+  long_desc: "Admin module contain number of calls for Chat platform "+
+  "managing", name: "admin"})
   # register hubot enterprise functions
-  robot.e.create {product: 'admin', verb: 'archive', entity: 'channel',
-  help: '<this|#name>- archive specific channel', type: 'respond'},
+  robot.e.create {verb: 'archive', entity: 'channel',
+  example: '#channelName', type: 'respond',
+  help: '<this|#name>- archive specific channel'},
   archive_channel
 
-  robot.e.create {product: 'admin',
-  verb: 'archive', entity: 'older',
-  extra: '([0-9]+)([dDhHmMsS]) ?(.*)',
+  robot.e.create {verb: 'archive', entity: 'older', example: '5d',
+  regex_suffix: {re: "([0-9]+)([dDhHmMsS]) ?(.*)", optional: false},
   help: '<N>(D/H/M/S) (named|tag) <name|tag> or <name|tag>- '+
   'archive channels older than by name or by topic', type: 'respond'},
   archive_older
