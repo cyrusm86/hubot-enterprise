@@ -66,10 +66,10 @@ module.exports = (robot) ->
     myError = new Error
     trace = myError.stack.split('\n')
     trace.shift()
-    filename = __filename.replace(/[A-Z]:\\/, '').replace(/\\/ig, '/')
+    filename = __filename.replace(/[A-Za-z]:\\/, '').replace(/\\/ig, '/')
     fname = ''
     loop
-      shift = trace.shift().replace(/[A-Z]:\\/, '').replace(/\\/ig, '/')
+      shift = trace.shift().replace(/[A-Za-z]:\\/, '').replace(/\\/ig, '/')
       fname = /\((.*):/i.exec(shift)[1].split(':')[0]
       unless fname == filename
         break
