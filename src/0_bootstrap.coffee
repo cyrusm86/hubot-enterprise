@@ -73,11 +73,16 @@ module.exports = (robot) ->
       fname = /\((.*):/i.exec(shift)[1].split(':')[0]
       unless fname == filename
         break
-    fmatch = fname.match(/\/hubot-(.*?)\//ig)
-    if fmatch
+    integration_index = fname.lastIndexOf("hubot-")
+    if integration_index > -1
+      fname = '/'+fname.substring(integration_index)
+      fmatch = fname.match(/\/hubot-(.*?)\//ig)
       return fmatch.pop().replace(/hubot-|\//g, '')
     # if not matched- return default 'script'
-    return 'script'
+    else
+      robot.logger.error("Integration name could not be extracted from path: "+
+        "#{fname}")
+      return 'script'
 
   # build extra part of the regex
   #
