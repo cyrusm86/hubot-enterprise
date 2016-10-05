@@ -66,18 +66,23 @@ module.exports = (robot) ->
     myError = new Error
     trace = myError.stack.split('\n')
     trace.shift()
-    filename = __filename.replace(/[A-Z]:\\/, '').replace(/\\/ig, '/')
+    filename = __filename.replace(/[A-Za-z]:\\/, '').replace(/\\/ig, '/')
     fname = ''
     loop
-      shift = trace.shift().replace(/[A-Z]:\\/, '').replace(/\\/ig, '/')
+      shift = trace.shift().replace(/[A-Za-z]:\\/, '').replace(/\\/ig, '/')
       fname = /\((.*):/i.exec(shift)[1].split(':')[0]
       unless fname == filename
         break
-    fmatch = fname.match(/\/hubot-(.*?)\//ig)
-    if fmatch
+    integration_index = fname.lastIndexOf("hubot-")
+    if integration_index > -1
+      fname = '/'+fname.substring(integration_index)
+      fmatch = fname.match(/\/hubot-(.*?)\//ig)
       return fmatch.pop().replace(/hubot-|\//g, '')
     # if not matched- return default 'script'
-    return 'script'
+    else
+      robot.logger.error("Integration name could not be extracted from path: "+
+        "#{fname}")
+      return 'script'
 
   # build extra part of the regex
   #
