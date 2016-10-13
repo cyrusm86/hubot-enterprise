@@ -1,2 +1,5 @@
 /node_modules
 .idea/
+test/*.xml
+coffee-lint.xml
+js-lint.xml
