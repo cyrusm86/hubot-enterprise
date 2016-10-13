@@ -1,0 +1,23 @@
+version: '2'
+services:
+  he:
+    build:
+      context: .
+      args:
+        - http_proxy=$http_proxy
+        - https_proxy=$https_proxy
+        - ftp_proxy=$ftp_proxy
+        - no_proxy=$no_proxy
+        - HTTP_PROXY=$HTTP_PROXY
+        - HTTPS_PROXY=$HTTPS_PROXY
+        - FTP_PROXY=$FTP_PROXY
+        - NO_PROXY=$NO_PROXY
+    environment:
+        - http_proxy=$http_proxy
+        - https_proxy=$https_proxy
+        - ftp_proxy=$ftp_proxy
+        - no_proxy=$no_proxy
+        - HTTP_PROXY=$HTTP_PROXY
+        - HTTPS_PROXY=$HTTPS_PROXY
+        - FTP_PROXY=$FTP_PROXY
+        - NO_PROXY=$NO_PROXY

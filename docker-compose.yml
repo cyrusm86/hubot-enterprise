@@ -1,0 +1,11 @@
+version: '2'
+services:
+  he:
+    build: .
+    volumes:
+      - .:/bot/node_modules/hubot-enterprise
+    environment:
+      HUBOT_LOG_LEVEL: debug
+      ADAPTER: slack
+      HUBOT_APP_TOKEN:
+      HUBOT_SLACK_TOKEN:
