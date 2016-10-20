@@ -19,32 +19,34 @@
   ],
   "dependencies": {
     "bluebird": "^3.3.4",
+    "did-you-mean": "^0.0.1",
+    "easy-table": "^1.0.0",
+    "he-auth-service": "git+https://github.com/eedevops/he-auth-service.git",
     "insight": "^0.8.2",
     "lodash": "^4.6.1",
     "moment": "^2.13.0",
-    "request": "^2.69.0",
-    "easy-table": "^1.0.0",
-    "nock": "^8.0.0",
-    "did-you-mean": "^0.0.1"
+    "nock": "^8.1.0",
+    "request": "^2.69.0"
   },
   "peerDependencies": {
     "hubot": "2.x"
   },
   "devDependencies": {
-    "hubot-test-helper": "1.5.0",
     "chai": "^2.1.1",
     "coffee-script": "1.6.3",
-    "hubot": "2.x",
-    "jshint": "^2.9.2",
     "coffeelint": "^1.15.7",
-    "jenkins-mocha": "^2.6.0"
+    "hubot": "2.x",
+    "hubot-test-helper": "1.5.0",
+    "jenkins-mocha": "^2.6.0",
+    "jshint": "^2.9.2",
+    "nock": "^8.1.0"
   },
-  "main": "index.coffee",
   "scripts": {
     "coffeelint": "coffeelint --reporter jslint -r . > coffee-lint.xml || true",
     "jslint": "jshint --exclude-path .gitignore --reporter=jslint .> js-lint.xml || true",
-    "test": "ARTIFACTS_DIR='./' COVERAGE_DIR='./' TEST_DIR='./test/' jenkins-mocha --compilers \"coffee:coffee-script\" --check-leaks --no-coverage test/**/*.coffee || true",
-    "lint": "coffeelint -r .; jshint --exclude-path .gitignore . || true"
+    "test": "ARTIFACTS_DIR='./' COVERAGE_DIR='./' TEST_DIR='./test/' jenkins-mocha --compilers \"coffee:coffee-script\" --check-leaks --no-coverage test/**/*.coffee",
+    "lint": "coffeelint -r .; jshint --exclude-path .gitignore . || true",
+    "tdd": "echo '**WARNING**: Please restart after adding new test files' && ./node_modules/.bin/mocha --recursive --watch --growl --check-leaks --compilers \"coffee:coffee-script\" ./test/**/*.coffee"
   },
   "coffeelintConfig": {
     "max_line_length": {

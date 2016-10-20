@@ -25,22 +25,28 @@ Path = require('path')
 Insight = require('insight')
 _ = require 'lodash'
 pkg = require('../package.json')
+auth = require('../lib/authentication.coffee')
 
 Adapter =
-insight = new Insight(
-  trackingCode: process.env.HUBOT_HE_GA_CODE || 'UA-80724671-1'
-  pkg: pkg)
+  insight = new Insight(
+    trackingCode: process.env.HUBOT_HE_GA_CODE || 'UA-80724671-1'
+    pkg: pkg)
 
 insight.optOut = process.env.HUBOT_HE_OPT_OUT || false
 insight.track 'HE', 'start'
-help_words = [ 'info', 'menu', 'home', '\\?', 'support', 'help']
+help_words = ['info', 'menu', 'home', '\\?', 'support', 'help']
 # contatination of help
 reserverd_apps = help_words.concat([])
 # HACK: adding 'enterprise' keyword after taking reserved apps, to avoid errors
 # on this (enterprise) integration
 help_words.push('enterprise')
-inc_path = __dirname+'/../lib/'
+inc_path = __dirname + '/../lib/'
 module.exports = (robot) ->
+
+  # Authentication is disabled by default
+  # If a client is returned, then authentication was enabled and it is ready
+  # to be used.
+  auth_client = auth.setup_auth_client()
 
   # Registrar object- store all integrations meta and info
   # structure: https://github.com/eedevops/he-design/blob/master/README.md#1-roboteregisterintegrationmetadata-authentication
@@ -49,11 +55,15 @@ module.exports = (robot) ->
 
   # create e (enterprise object on robot)
   robot.e = {}
-  # `mount` adapter object
-  robot.e.adapter = new (require inc_path+'adapter_core')(robot)
 
-  commons = new (require inc_path+'commons')()
-  help = new (require inc_path+'help')(robot, help_words)
+  # Inject authentication helpers
+  robot.e.auth = auth
+
+  # `mount` adapter object
+  robot.e.adapter = new (require inc_path + 'adapter_core')(robot)
+
+  commons = new (require inc_path + 'commons')()
+  help = new (require inc_path + 'help')(robot, help_words)
 
   # load scripts to robot
   load_he_scripts = (path) ->
@@ -75,13 +85,13 @@ module.exports = (robot) ->
         break
     integration_index = fname.lastIndexOf("hubot-")
     if integration_index > -1
-      fname = '/'+fname.substring(integration_index)
+      fname = '/' + fname.substring(integration_index)
       fmatch = fname.match(/\/hubot-(.*?)\//ig)
       return fmatch.pop().replace(/hubot-|\//g, '')
     # if not matched- return default 'script'
     else
-      robot.logger.error("Integration name could not be extracted from path: "+
-        "#{fname}")
+      robot.logger.error("Integration name could not be extracted from path: " +
+          "#{fname}")
       return 'script'
 
   # build extra part of the regex
@@ -100,13 +110,13 @@ module.exports = (robot) ->
     if (typeof extra != "object")
       throw new Error("info.regex_suffix MUST be an object")
     # check that re is string or undefined
-    if ! _.includes(["undefined", "string"], (typeof extra.re))
-      throw new Error("Cannot register a listener, info.regex_suffix.re must "+
-        "be a string or undefined")
+    if !_.includes(["undefined", "string"], (typeof extra.re))
+      throw new Error("Cannot register a listener, info.regex_suffix.re must " +
+          "be a string or undefined")
     # check that optional is boolean or undefined
-    if ! _.includes(["undefined", "boolean"], (typeof extra.optional))
-      throw new Error("Cannot register a listener, info.regex_suffix.optional "+
-      "must be a boolean or undefined")
+    if !_.includes(["undefined", "boolean"], (typeof extra.optional))
+      throw new Error("Cannot register a listener, info.regex_suffix.optional " +
+          "must be a boolean or undefined")
     # TODO: prevent calls similarity as much as possible
     # TODO: only one verb+entity may have optional: true
     # TODO: forbid {optional: true} with {re: null, optional: false}
@@ -141,17 +151,16 @@ module.exports = (robot) ->
       verb.entities[info.entity] = verb.entities[info.entity] || {}
       # basic check for duplicates
       if verb.entities[info.entity][info.regex]
-        throw new Error("Cannot register listener for #{mapping_name}, "+
-          "similar one already registred, Info: "+JSON.stringify(info))
+        throw new Error("Cannot register listener for #{mapping_name}, " +
+            "similar one already registred, Info: " + JSON.stringify(info))
       verb.entities[info.entity][info.regex] = info
     else
       # register calls without entity
       # basic check for duplicates
       if verb.flat[info.regex]
-        throw new Error("Cannot register listener for #{mapping_name}, "+
-          "similar one already registred, Info: "+JSON.stringify(info))
+        throw new Error("Cannot register listener for #{mapping_name}, " +
+            "similar one already registred, Info: " + JSON.stringify(info))
       verb.flat[info.regex] = info
-     # console.log('REGISTRAR', JSON.stringify(registrar))
 
   # build regex for enterprise calls and register to HE help module
   # info: list of the function info:
@@ -172,22 +181,22 @@ module.exports = (robot) ->
     info.product = find_alias_by_name(integration_name)
     # do not accept unregistered integrations
     if !registrar.apps[integration_name]
-      throw new Error("cannot register listener for #{integration_name}, "+
-        "integration #{integration_name} not registered, please use "+
-        "robot.e.registerIntegration")
+      throw new Error("cannot register listener for #{integration_name}, " +
+          "integration #{integration_name} not registered, please use " +
+          "robot.e.registerIntegration")
     if !info.verb
-      throw new Error("Cannot register listener for #{info.product}, "+
-        "no verb passed")
+      throw new Error("Cannot register listener for #{info.product}, " +
+          "no verb passed")
     if info.verb.includes(" ") || (info.entity && info.entity.includes(" "))
-      throw new Error("Cannot register listener for #{info.product}, "+
-        "verb/entity must be a single word")
+      throw new Error("Cannot register listener for #{info.product}, " +
+          "verb/entity must be a single word")
     info.regex = build_extra_re(info)
     if !info.type || (info.type != 'hear')
       info.type = 'respond'
     re_string = "#{info.product} #{info.verb}"
     if info.entity
       re_string += " #{info.entity}"
-    re_string+= "#{info.regex}$"
+    re_string += "#{info.regex}$"
     registrar_add_call(info, integration_name)
     return new RegExp(re_string, 'i')
 
@@ -203,38 +212,44 @@ module.exports = (robot) ->
   robot.e.registerIntegration = (metadata, authentication) ->
     integration_name = find_integration_name()
     if _.includes(reserverd_apps, integration_name)
-      throw new Error("integration name cannot have reserved name "+
-        integration_name)
+      throw new Error("integration name cannot have reserved name " +
+          integration_name)
     if registrar.apps[integration_name]
       throw new Error("Integration #{integration_name} already registred!")
     if (typeof metadata.name == "string")
       if metadata.name.includes(" ")
-        throw new Error("Cannot register integration for #{integration_name}, "+
-          "name alias must be a single word")
+        throw new Error("Cannot register integration for #{integration_name}, " +
+            "name alias must be a single word")
       else if _.includes(reserverd_apps, metadata.name)
-        throw new Error("integration metadata.name cannot have reserved name "+
-          metadata.name)
+        throw new Error("integration metadata.name cannot have reserved name " +
+            metadata.name)
       else
         registrar.mapping[metadata.name] = integration_name
     else if _.includes(Object.keys(metadata), 'name')
-      throw new Error("Cannot register integration for #{integration_name}, "+
-        "name alias must be a string")
+      throw new Error("Cannot register integration for #{integration_name}, " +
+          "name alias must be a string")
     else
       registrar.mapping[integration_name] = integration_name
     # check input
     if !metadata.short_desc
       throw new Error('at least medatada.short_desc must be specified')
     metadata.long_desc = metadata.long_desc || metadata.short_desc
-    # check that auth existing and correct
-    # TODO: check the auth type existing in auth Module auth.types enum
-    # TODO: check that options corresponds with selected Auth type
-    #   in auth.type.options
 
+    # check that auth existing and correct
     if authentication && !authentication.type
-      throw new Error('Must provide authentication type!')
+      throw robot.e.auth.errors.no_type
+
+    if authentication && !_.includes(robot.e.auth.TYPES, authentication.type)
+      throw robot.e.auth.errors.unsupported_type
+
+    # TODO: verify that authentication.params is valid for the given type.
+
+    if authentication && !auth_client
+      throw robot.e.auth.errors.not_enabled
+
     registrar.apps[integration_name] = {
       metadata: metadata,
-      auth: authentication || {},
+      auth: authentication || null,
       verbs: {}
     }
 
@@ -256,15 +271,68 @@ module.exports = (robot) ->
   # robot[info.type]
   #  /#{info.product} #{info.verb} #{info.entity} #{info.extra}/i
   robot.e.create = (info, callback) ->
-    if typeof callback != 'function'
-      throw new Error('callback is not a function but a '+(typeof callback))
+    handler_type = typeof callback
+    if handler_type != 'function'
+      throw new Error('callback is not a function but a ' + handler_type)
     info.cb = callback
-    re = build_enterprise_regex(info, find_integration_name())
-    robot.logger.debug("HE registering call:\n"+
-      "\trobot.#{info.type} #{re.toString()}")
-    robot[info.type] re, (msg) ->
-      # TODO: add auth check here, use bluebird promises if async needed
-      callback(msg, robot)
+    integration_name = find_integration_name()
+    re = build_enterprise_regex(info, integration_name)
+    robot.logger.debug("HE registering call:\n" +
+        "\trobot.#{info.type} #{re.toString()}")
+
+    # TODO: refactor this into its own function
+    authenticated_handler = (msg) ->
+      # Execute auth and then handler
+      # Execute authentication mechanisms when:
+      # * Integration has added authentication configuration, and
+      # * The integration listener was flagged
+      if !msg.envelope?.user?.id?
+        console.log('WARNING: username / id is not available for authentication flow')
+
+      auth_client.authenticatedAsync(msg.envelope.user.id, find_alias_by_name(integration_name))
+        .then (secrets) =>
+          # Successfully retrieved secrets
+          msg.auth = secrets
+          return callback(msg, robot)
+        .catch (e) =>
+          # Respond according to the type of error
+          if _.includes(e.toString(), auth.client.UNEXPECTED_STATUS_CODE) and
+             _.includes(e.toString(), '404')
+            # The response was NOT_FOUND, therefore need to authenticate.
+            token_url_info =
+              userInfo:
+                id: msg.envelope.user.id
+              integrationInfo:
+                name: find_alias_by_name(integration_name)
+                auth: registrar.apps[integration_name].auth
+              botInfo: {}
+              urlProps:
+                ttl: registrar.apps[integration_name].auth.token_ttl? ||
+                  auth.values.DEFAULT_TOKEN_TTL
+            # Request a token_url to send to user.
+            auth_client.generateTokenUrlAsync(token_url_info)
+            .then (token_response) =>
+              cmd = find_alias_by_name(integration_name) + ' ' +
+                info.verb + ' ' + info.entity
+              # Send token_url to user
+              msg.reply commons.authentication_message(cmd,token_response.url)
+            .catch (e) =>
+              # Something went wrong, cannot send token_url
+              msg.reply commons.authentication_error_message(e)
+          else
+            # Other errors which are not related to not being authenticated.
+            # It is good UX to inform user of errors.
+            msg.reply commons.authentication_error_message(e)
+
+    # Authentication is disabled by explicitly specifying auth: false in the
+    # robot.e.create() params.
+    if auth_client && registrar.apps[integration_name]?.auth && info.auth != false
+      # If authentication is enabled and integration has registered it
+      robot[info.type] re, authenticated_handler
+    else
+      # If no authentication needed, use this handler instead
+      robot[info.type] re, (msg) ->
+        callback(msg, robot)
 
   # main receiveMiddleware
   robot.receiveMiddleware (context, next, done) ->
