@@ -4,6 +4,9 @@ services:
     build: .
     volumes:
       - .:/bot/node_modules/hubot-enterprise
+    # To fix npm 3 issue with node_modules that are git repos:
+    # https://github.com/npm/npm/issues/10372
+    command: "bash -c \"sed -i '/npm install/d' /bot/bin/hubot && /he/script/docker_install.sh\""
     environment:
       HUBOT_LOG_LEVEL: debug
       ADAPTER: slack

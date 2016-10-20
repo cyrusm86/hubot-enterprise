@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-FROM node:4
+FROM node:6
 
 # currently support only slack out of the box
 # to replace adapter: run with different ADAPTER env
