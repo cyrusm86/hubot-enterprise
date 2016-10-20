@@ -33,7 +33,8 @@ env =
 errors =
   no_type: new Error('Must provide authentication type!')
   unsupported_type: new Error('Specified type is not supported')
-  not_enabled: new Error('Please set the ' + env.ENABLE + ' and ' + env.ENDPOINT + ' env vars')
+  not_enabled: new Error('Please set the ' + env.ENABLE + ' and ' +
+      env.ENDPOINT + ' env vars')
 
 values =
   # Default to 30 minute token expiration

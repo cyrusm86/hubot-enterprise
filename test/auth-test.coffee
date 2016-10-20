@@ -31,7 +31,8 @@ commons = new (require('../lib/commons.coffee'))()
 expect = chai.expect
 
 process.env[auth_lib.env.ENABLE] = 1
-process.env[auth_lib.env.ENDPOINT] = auth_service_endpoint = 'https://localhost/'
+auth_service_endpoint = 'https://localhost/'
+process.env[auth_lib.env.ENDPOINT] = auth_service_endpoint
 helper = new Helper(['../src/0_bootstrap.coffee'])
 
 describe 'Authentication', ->
@@ -56,7 +57,8 @@ describe 'Authentication', ->
     expect(basic_auth).have.keys(['type', 'params'])
     @room.robot.e.registerIntegration(metadata, basic_auth)
 
-  it 'should fail registration when using unsupported authentication method', (done) ->
+  it 'should fail registration when using unsupported authentication' +
+      ' method', (done) ->
     method = {
       type: 'unsupported'
     }
@@ -64,19 +66,22 @@ describe 'Authentication', ->
       @room.robot.e.registerIntegration(metadata, method)
     catch e
       expect(e).to.exist
-      expect(e.toString()).to.equal(@room.robot.e.auth.errors.unsupported_type.toString())
+      expect(e.toString()).to.equal(
+        @room.robot.e.auth.errors.unsupported_type.toString())
       return done()
     done(new Error('did not throw expected exception'))
 
 
-  it 'should fail registration when not specifying type in the authentication method', (done) ->
+  it 'should fail registration when not specifying type in the ' +
+      'authentication method', (done) ->
     method = {
     }
     try
       @room.robot.e.registerIntegration(metadata, method)
     catch e
       expect(e).to.exist
-      expect(e.toString()).to.equal(@room.robot.e.auth.errors.no_type.toString())
+      expect(e.toString()).to.equal(
+        @room.robot.e.auth.errors.no_type.toString())
       return done()
     done(new Error('did not throw expected exception'))
 
@@ -84,10 +89,43 @@ describe 'Authentication', ->
     @room.robot.e.registerIntegration(metadata, null)
 
   describe 'BasicAuthentication', ->
+    metadata =
+      short_desc: 'Basic Auth Example'
+      long_desc: 'Showcases how to write an integration ' +
+        'that uses BasicAuthentication'
+      name: "basic_auth"
+
+    command_params =
+      verb: 'get'
+      entity: 'something'
+      type: 'respond'
+
+    integration_name = 'basic_auth'
+
+    command =
+      integration_name + ' ' +
+        command_params.verb + ' ' +
+        command_params.entity
+
+    user_id = 'pedro'
+
+    should_fail_message = 'Should not run this command, it should fail ' +
+      'before internally'
+
+    command_should_not_run = (msg) ->
+      msg.reply should_fail_message
+
+
+    TEST_TIMEOUT = 10000
+    ASYNC_MESSAGE_TIMEOUT = 2000
+
+    beforeEach ->
+      # register module
+      basic_auth = @room.robot.e.auth.generate_basic_auth({})
+      @room.robot.e.registerIntegration(metadata, basic_auth)
+
     it 'should perform integration command when secrets exist', (done) ->
-      this.timeout(10000)
-      user_id = 'pedro'
-      integration_name = 'basic_auth'
+      this.timeout(TEST_TIMEOUT)
       secrets_payload =
         secrets:
           token: 'cmljYXJkbzpteXBhc3M='
@@ -102,7 +140,7 @@ describe 'Authentication', ->
 
       nock(auth_service_endpoint)
       .get(path)
-      .reply(200, secrets_payload);
+      .reply(200, secrets_payload)
 
       success_reply = 'You successfully executed command for integration ' +
         integration_name
@@ -117,22 +155,10 @@ describe 'Authentication', ->
           expect(msg.auth.secrets.token).to.exist
           expect(msg.auth.user_info.id).to.exist
           expect(msg.auth.integration_info.name).to.exist
+          expect(robot).to.exist
           msg.reply success_reply
         catch e
           msg.reply e.toString()
-
-      metadata =
-        short_desc: 'Basic Auth Example'
-        long_desc: 'Showcases how to write an integration that uses BasicAuthentication'
-        name: secrets_payload.integration_info.name
-
-      # register module
-      basic_auth = @room.robot.e.auth.generate_basic_auth({})
-      @room.robot.e.registerIntegration(metadata, basic_auth)
-      command_params =
-        verb: 'get'
-        entity: 'something'
-        type: 'respond'
 
       # Authentication is enabled be default for this command
       @room.robot.e.create(command_params, authenticated_command)
@@ -140,38 +166,22 @@ describe 'Authentication', ->
         [user_id, '@hubot basic_auth get something'],
         ['hubot', '@' + user_id + ' ' + success_reply]
       ]
-      @room.user.say(msg_interaction[0][0], msg_interaction[0][1]).then =>
-        messages = @room.messages
+      messages = @room.messages
+      @room.user.say(msg_interaction[0][0], msg_interaction[0][1]).then ->
         setTimeout(() ->
           expect(messages).to.eql msg_interaction
           done()
-        2000)
-      .catch (e) =>
+        ASYNC_MESSAGE_TIMEOUT)
+      .catch (e) ->
         done(e)
 
-    it 'should send error message to user if endpoint of auth service is not available', (done) ->
-      this.timeout(10000)
-      command_should_not_run = (msg) ->
-        msg.reply 'Should not run this command, it should fail before internally'
-
-      metadata =
-        short_desc: 'Basic Auth Example'
-        long_desc: 'Showcases how to write an integration that uses BasicAuthentication'
-        name: "basic_auth"
-
-      # register module
-      basic_auth = @room.robot.e.auth.generate_basic_auth({})
-      @room.robot.e.registerIntegration(metadata, basic_auth)
-      command_params =
-        verb: 'get'
-        entity: 'something'
-        type: 'respond'
+    it 'should send error message to user if endpoint of auth ' +
+        'service is not available', (done) ->
+      this.timeout(TEST_TIMEOUT)
 
       # Authentication is enabled be default for this command
       @room.robot.e.create(command_params, command_should_not_run)
 
-      user_id = 'pedro'
-      integration_name = 'basic_auth'
       path = '/secrets/' +
         user_id + '/' +
         integration_name
@@ -180,7 +190,7 @@ describe 'Authentication', ->
 
       nock(auth_service_endpoint)
       .get(path)
-      .replyWithError(e1);
+      .replyWithError(e1)
 
       expectedError = commons.authentication_error_message(e1)
 
@@ -191,19 +201,18 @@ describe 'Authentication', ->
 
       messages = @room.messages
       @room.user.say(conversation[0][0], conversation[0][1])
-      .then =>
+      .then ->
         setTimeout(() ->
           expect(messages).to.eql(conversation)
           done()
-        2000)
-      .catch (e) =>
+        ASYNC_MESSAGE_TIMEOUT)
+      .catch (e) ->
         done(e)
 
-    it 'should send error message to user if auth service responds errors other than 404', (done) ->
-      this.timeout(10000)
+    it 'should send error message to user if auth service responds ' +
+        'errors other than 404', (done) ->
+      this.timeout(TEST_TIMEOUT)
 
-      user_id = 'pedro'
-      integration_name = 'basic_auth'
       path = '/secrets/' +
         user_id + '/' +
         integration_name
@@ -214,23 +223,7 @@ describe 'Authentication', ->
 
       nock(auth_service_endpoint)
       .get(path)
-      .reply(500, response);
-
-      command_should_not_run = (msg) ->
-        msg.reply 'Should not run this command, it should fail before internally'
-
-      metadata =
-        short_desc: 'Basic Auth Example'
-        long_desc: 'Showcases how to write an integration that uses BasicAuthentication'
-        name: "basic_auth"
-
-      # register module
-      basic_auth = @room.robot.e.auth.generate_basic_auth({})
-      @room.robot.e.registerIntegration(metadata, basic_auth)
-      command_params =
-        verb: 'get'
-        entity: 'something'
-        type: 'respond'
+      .reply(500, response)
 
       # Authentication is enabled be default for this command
       @room.robot.e.create(command_params, command_should_not_run)
@@ -244,20 +237,18 @@ describe 'Authentication', ->
       ]
       messages = @room.messages
       @room.user.say(conversation[0][0], conversation[0][1])
-      .then =>
+      .then ->
         setTimeout(() ->
           expect(messages).to.eql(conversation)
           done()
-        2000)
-      .catch (e) =>
+        ASYNC_MESSAGE_TIMEOUT)
+      .catch (e) ->
         done(e)
 
     it 'should send error to user when auth service fail to ' +
         'generate token_url', (done) ->
-      this.timeout(10000)
+      this.timeout(TEST_TIMEOUT)
 
-      user_id = 'pedro'
-      integration_name = 'basic_auth'
       path = '/secrets/' +
         user_id + '/' +
         integration_name
@@ -266,39 +257,19 @@ describe 'Authentication', ->
         message: 'Error retrieving secrets at ' + path
 
       token_response =
-        message: 'High volume of requests, server unavailable. Please try again later.'
+        message: 'High volume of requests, server unavailable.' +
+          ' Please try again later.'
 
       nock(auth_service_endpoint)
       .get(path)
-      .reply(404, response);
+      .reply(404, response)
 
       nock(auth_service_endpoint)
       .post('/token_urls')
       .reply(500, token_response)
 
-      command_should_not_run = (msg) ->
-        msg.reply 'Should not run this command, it should fail before internally'
-
-      metadata =
-        short_desc: 'Basic Auth Example'
-        long_desc: 'Showcases how to write an integration that uses BasicAuthentication'
-        name: "basic_auth"
-
-      # register module
-      basic_auth = @room.robot.e.auth.generate_basic_auth({})
-      @room.robot.e.registerIntegration(metadata, basic_auth)
-      command_params =
-        verb: 'get'
-        entity: 'something'
-        type: 'respond'
-
       # Authentication is enabled be default for this command
       @room.robot.e.create(command_params, command_should_not_run)
-
-      command =
-        integration_name + ' ' +
-        command_params.verb + ' ' +
-        command_params.entity
 
       expectedError = commons.authentication_error_message(
         new Error(auth_service.client.UNEXPECTED_STATUS_CODE + '500'))
@@ -310,20 +281,18 @@ describe 'Authentication', ->
 
       messages = @room.messages
       @room.user.say(conversation[0][0], conversation[0][1])
-      .then =>
+      .then ->
         setTimeout(() ->
           expect(messages).to.eql(conversation)
           done()
-        2000)
-      .catch (e) =>
+        ASYNC_MESSAGE_TIMEOUT)
+      .catch (e) ->
         done(e)
 
     it 'should send error to user when auth service is not available to' +
         'generate token_url', (done) ->
-      this.timeout(10000)
+      this.timeout(TEST_TIMEOUT)
 
-      user_id = 'pedro'
-      integration_name = 'basic_auth'
       path = '/secrets/' +
         user_id + '/' +
         integration_name
@@ -331,12 +300,9 @@ describe 'Authentication', ->
       response =
         message: 'Error retrieving secrets at ' + path
 
-      token_response =
-        message: 'High volume of requests, server unavailable. Please try again later.'
-
       nock(auth_service_endpoint)
       .get(path)
-      .reply(404, response);
+      .reply(404, response)
 
       e1 = new Error('connect ECONNREFUSED 127.0.0.1:443')
 
@@ -344,29 +310,8 @@ describe 'Authentication', ->
       .post('/token_urls')
       .replyWithError(e1)
 
-      command_should_not_run = (msg) ->
-        msg.reply 'Should not run this command, it should fail before internally'
-
-      metadata =
-        short_desc: 'Basic Auth Example'
-        long_desc: 'Showcases how to write an integration that uses BasicAuthentication'
-        name: "basic_auth"
-
-      # register module
-      basic_auth = @room.robot.e.auth.generate_basic_auth({})
-      @room.robot.e.registerIntegration(metadata, basic_auth)
-      command_params =
-        verb: 'get'
-        entity: 'something'
-        type: 'respond'
-
       # Authentication is enabled be default for this command
       @room.robot.e.create(command_params, command_should_not_run)
-
-      command =
-        integration_name + ' ' +
-        command_params.verb + ' ' +
-        command_params.entity
 
       expectedError = commons.authentication_error_message(e1)
 
@@ -377,19 +322,18 @@ describe 'Authentication', ->
 
       messages = @room.messages
       @room.user.say(conversation[0][0], conversation[0][1])
-      .then =>
+      .then ->
         setTimeout(() ->
           expect(messages).to.eql(conversation)
           done()
-        2000)
-      .catch (e) =>
+        ASYNC_MESSAGE_TIMEOUT)
+      .catch (e) ->
         done(e)
 
-    it 'should send user a token_url if secrets not found (not authenticated)', (done) ->
-      this.timeout(10000)
+    it 'should send user a token_url if secrets not found ' +
+        '(not authenticated)', (done) ->
+      this.timeout(TEST_TIMEOUT)
 
-      user_id = 'pedro'
-      integration_name = 'basic_auth'
       path = '/secrets/' +
         user_id + '/' +
         integration_name
@@ -409,35 +353,14 @@ describe 'Authentication', ->
 
       nock(auth_service_endpoint)
       .get(path)
-      .reply(404, response);
+      .reply(404, response)
 
       nock(auth_service_endpoint)
       .post('/token_urls')
       .reply(201, token_response)
 
-      command_should_not_run = (msg) ->
-        msg.reply 'Should not run this command, it should fail before internally'
-
-      metadata =
-        short_desc: 'Basic Auth Example'
-        long_desc: 'Showcases how to write an integration that uses BasicAuthentication'
-        name: "basic_auth"
-
-      # register module
-      basic_auth = @room.robot.e.auth.generate_basic_auth({})
-      @room.robot.e.registerIntegration(metadata, basic_auth)
-      command_params =
-        verb: 'get'
-        entity: 'something'
-        type: 'respond'
-
       # Authentication is enabled be default for this command
       @room.robot.e.create(command_params, command_should_not_run)
-
-      command =
-        integration_name + ' ' +
-        command_params.verb + ' ' +
-        command_params.entity
 
       expectedMsg = commons.authentication_message(command, token_response.url)
 
@@ -448,10 +371,10 @@ describe 'Authentication', ->
 
       messages = @room.messages
       @room.user.say(conversation[0][0], conversation[0][1])
-      .then =>
+      .then ->
         setTimeout(() ->
           expect(messages).to.eql(conversation)
           done()
-        2000)
-      .catch (e) =>
+        ASYNC_MESSAGE_TIMEOUT)
+      .catch (e) ->
         done(e)

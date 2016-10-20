@@ -49,8 +49,10 @@ module.exports = (robot) ->
   auth_client = auth.setup_auth_client()
 
   # Registrar object- store all integrations meta and info
-  # structure: https://github.com/eedevops/he-design/blob/master/README.md#1-roboteregisterintegrationmetadata-authentication
-  # automatically create with admin, admin will NEVER have auth because it's not a real module
+  # Design specs:
+  # https://github.com/eedevops/he-design/blob/master/hubot_enterprise.md#design
+  # Automatically create with admin, admin will NEVER have auth
+  # because it's not a real module
   registrar = {apps: {}, mapping: {}}
 
   # create e (enterprise object on robot)
@@ -70,7 +72,8 @@ module.exports = (robot) ->
     scriptsPath = Path.resolve ".", path
     robot.load scriptsPath
 
-  # find integrations names: find by extracting integration name from integration folder
+  # find integrations names: find by extracting integration name from
+  # integration folder.
   # hubot-integration will become: `integration`
   find_integration_name = ->
     myError = new Error
@@ -115,7 +118,8 @@ module.exports = (robot) ->
           "be a string or undefined")
     # check that optional is boolean or undefined
     if !_.includes(["undefined", "boolean"], (typeof extra.optional))
-      throw new Error("Cannot register a listener, info.regex_suffix.optional " +
+      throw new Error("Cannot register a listener, " +
+          "info.regex_suffix.optional " +
           "must be a boolean or undefined")
     # TODO: prevent calls similarity as much as possible
     # TODO: only one verb+entity may have optional: true
@@ -218,7 +222,8 @@ module.exports = (robot) ->
       throw new Error("Integration #{integration_name} already registred!")
     if (typeof metadata.name == "string")
       if metadata.name.includes(" ")
-        throw new Error("Cannot register integration for #{integration_name}, " +
+        throw new Error("Cannot register integration for " +
+            "#{integration_name}, " +
             "name alias must be a single word")
       else if _.includes(reserverd_apps, metadata.name)
         throw new Error("integration metadata.name cannot have reserved name " +
@@ -287,14 +292,16 @@ module.exports = (robot) ->
       # * Integration has added authentication configuration, and
       # * The integration listener was flagged
       if !msg.envelope?.user?.id?
-        console.log('WARNING: username / id is not available for authentication flow')
+        console.log('WARNING: username / id is not available for ' +
+            'authentication flow')
 
-      auth_client.authenticatedAsync(msg.envelope.user.id, find_alias_by_name(integration_name))
-        .then (secrets) =>
+      auth_client.authenticatedAsync(msg.envelope.user.id,
+        find_alias_by_name(integration_name))
+        .then (secrets) ->
           # Successfully retrieved secrets
           msg.auth = secrets
           return callback(msg, robot)
-        .catch (e) =>
+        .catch (e) ->
           # Respond according to the type of error
           if _.includes(e.toString(), auth.client.UNEXPECTED_STATUS_CODE) and
              _.includes(e.toString(), '404')
@@ -311,12 +318,12 @@ module.exports = (robot) ->
                   auth.values.DEFAULT_TOKEN_TTL
             # Request a token_url to send to user.
             auth_client.generateTokenUrlAsync(token_url_info)
-            .then (token_response) =>
+            .then (token_response) ->
               cmd = find_alias_by_name(integration_name) + ' ' +
                 info.verb + ' ' + info.entity
               # Send token_url to user
               msg.reply commons.authentication_message(cmd,token_response.url)
-            .catch (e) =>
+            .catch (e) ->
               # Something went wrong, cannot send token_url
               msg.reply commons.authentication_error_message(e)
           else
@@ -326,7 +333,8 @@ module.exports = (robot) ->
 
     # Authentication is disabled by explicitly specifying auth: false in the
     # robot.e.create() params.
-    if auth_client && registrar.apps[integration_name]?.auth && info.auth != false
+    something = auth_client and registrar.apps[integration_name]?.auth
+    if something and info.auth != false
       # If authentication is enabled and integration has registered it
       robot[info.type] re, authenticated_handler
     else

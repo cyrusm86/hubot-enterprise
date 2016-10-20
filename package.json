@@ -44,17 +44,18 @@
   },
   "main": "index.coffee",
   "scripts": {
-    "coffeelint": "coffeelint --reporter jslint -r . > coffee-lint.xml || true",
-    "jslint": "jshint --exclude-path .gitignore --reporter=jslint .> js-lint.xml || true",
+    "coffeelint": "coffeelint --reporter jslint -r . > coffee-lint.xml",
+    "jslint": "jshint --exclude-path .gitignore --reporter=jslint .> js-lint.xml",
     "test": "ARTIFACTS_DIR='./' COVERAGE_DIR='./' TEST_DIR='./test/' jenkins-mocha --compilers \"coffee:coffee-script\" --check-leaks --no-coverage test/**/*.coffee",
-    "lint": "coffeelint -r .; jshint --exclude-path .gitignore . || true",
-    "tdd": "echo '**WARNING**: Please restart after adding new test files' && ./node_modules/.bin/mocha --recursive --watch --growl --check-leaks --compilers \"coffee:coffee-script\" ./test/**/*.coffee"
+    "lint": "coffeelint -r . && jshint --exclude-path .gitignore .",
+    "tdd": "echo '**WARNING**: Please restart after adding new test files' && ./node_modules/.bin/mocha --recursive --watch --growl --check-leaks --compilers \"coffee:coffee-script\" ./test/**/*.coffee",
+    "test-all": "npm run lint && npm test"
   },
   "coffeelintConfig": {
     "max_line_length": {
       "limitComments": false
     }
   },
-  "author": "Moshe Belostotsky <belostot@hpe.com>",
+  "author": "Hewlett Packard Enterprise (HPE)",
   "license": "MIT"
 }

@@ -38,7 +38,8 @@ class Commons
       " at #{url}"
   authentication_error_message: (e) ->
     return 'There was an error trying to authenticate ' +
-        'your user in Hubot Enterprise. Please contact your system administration and' +
+        'your user in Hubot Enterprise. Please contact your system ' +
+        'administration and' +
         ' provide him \/ her this error message: ' + e.toString()
 
 module.exports = Commons
