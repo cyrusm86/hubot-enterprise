@@ -20,14 +20,26 @@
 version: '2'
 services:
   he:
-    build: .
-    volumes:
-      - .:/bot/node_modules/hubot-enterprise
-    # To fix npm 3 issue with node_modules that are git repos:
-    # https://github.com/npm/npm/issues/10372
-    command: "bash -c \"sed -i '/npm install/d' /bot/bin/hubot && /he/script/docker_install.sh\""
     environment:
-      HUBOT_LOG_LEVEL: debug
-      ADAPTER: slack
-      HUBOT_APP_TOKEN:
-      HUBOT_SLACK_TOKEN:
+      HE_ENABLE_AUTH: 1
+      HE_AUTH_SERVICE_ENDPOINT: https://auth
+  auth:
+    image: chatopshpe/he-auth-service:latest
+    environment:
+      HE_IDENTITY_PORTAL_ENDPOINT: "https://example.com"
+      HE_AUTH_JWT_SECRET: secret
+      MONGO: "mongodb://mongo:27017"
+      HE_AUTH_SSL_PASS: default
+      VAULT_DEV_ROOT_TOKEN_ID: myroot
+    ports:
+      - "3000:3000"
+    depends_on:
+      - vault
+    volumes:
+      - ./certs:/usr/src/app/certs
+  vault:
+    image: vault:0.6.1
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: myroot
+      # need to bind to 0.0.0.0 so that it accepts remote connections (!localhost)
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
