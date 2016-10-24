@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Copyright 2016 Hewlett-Packard Development Company, L.P.
 #
@@ -20,28 +20,27 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# exit on errors
-set -e
+# Create an ssl certificate and key and place them in a directory called certs.
+# These will be used by the express server.
 
-# set npm proxy- if exists in env
-if [ -n "$http_proxy" ]
-then
-  npm config set http-proxy ${http_proxy}
-fi
+mkdir -p certs && \
 
-if [ -n "$https_proxy" ]
-then
-  npm config set https-proxy ${https_proxy}
-fi
+cd certs && \
 
-# install adapter if not slack
-if [ ${ADAPTER} != "slack" ]
-then
-  echo "installing adapter ${ADAPTER}"
-  npm install --save hubot-${ADAPTER}
-fi
+openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 9999 && \
 
-# npm install and add to external-scripts.json from /integration and NPM_INTEGRATIONS
-node /he/script/install_integrations.js "/integration" "${NPM_INTEGRATIONS}" .
+# Create key pairs to encrypt / decrypt JWE token_urls.
 
-./bin/hubot --adapter ${ADAPTER}
+openssl req -keyform PEM -nodes -newkey rsa:4096 -keyout jwe_token_url.pem \
+ -pubkey -out jwe_token_url_pub.pem && \
+
+# Create key pairs to encrypt / decrypt secrets (JWE).
+
+openssl req -keyform PEM -nodes -newkey rsa:4096 -keyout jwe_secrets.pem \
+ -pubkey -out jwe_secrets_pub.pem && \
+
+# Create key pairs to sign / verify jwt tokens.
+
+openssl req -keyform PEM -nodes -newkey rsa:4096 -keyout jwt_token.pem -pubkey -out jwt_token_pub.pem
+
+exit $?

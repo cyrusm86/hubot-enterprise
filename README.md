@@ -20,6 +20,7 @@ For more information, please reference our [wiki](https://github.com/eedevops/hu
   - [Testing your integration](https://github.com/eedevops/hubot-enterprise/wiki/testing)
   - [Using jenkins pipeline docker image](https://github.com/eedevops/hubot-enterprise/wiki/jenkins)
 - [DISCLAIMER](#disclaimer)
+- [CONTRIBUTING](/docs/contributing.md)
 
 ## DISCLAIMER
 

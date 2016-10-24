@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # Copyright 2016 Hewlett-Packard Development Company, L.P.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -19,29 +17,26 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
-# exit on errors
-set -e
-
-# set npm proxy- if exists in env
-if [ -n "$http_proxy" ]
-then
-  npm config set http-proxy ${http_proxy}
-fi
-
-if [ -n "$https_proxy" ]
-then
-  npm config set https-proxy ${https_proxy}
-fi
-
-# install adapter if not slack
-if [ ${ADAPTER} != "slack" ]
-then
-  echo "installing adapter ${ADAPTER}"
-  npm install --save hubot-${ADAPTER}
-fi
-
-# npm install and add to external-scripts.json from /integration and NPM_INTEGRATIONS
-node /he/script/install_integrations.js "/integration" "${NPM_INTEGRATIONS}" .
-
-./bin/hubot --adapter ${ADAPTER}
+version: '2'
+services:
+  he:
+    build:
+      context: .
+      args:
+        - http_proxy=$http_proxy
+        - https_proxy=$https_proxy
+        - ftp_proxy=$ftp_proxy
+        - no_proxy=$no_proxy
+        - HTTP_PROXY=$HTTP_PROXY
+        - HTTPS_PROXY=$HTTPS_PROXY
+        - FTP_PROXY=$FTP_PROXY
+        - NO_PROXY=$NO_PROXY
+    environment:
+        - http_proxy=$http_proxy
+        - https_proxy=$https_proxy
+        - ftp_proxy=$ftp_proxy
+        - no_proxy=$no_proxy
+        - HTTP_PROXY=$HTTP_PROXY
+        - HTTPS_PROXY=$HTTPS_PROXY
+        - FTP_PROXY=$FTP_PROXY
+        - NO_PROXY=$NO_PROXY

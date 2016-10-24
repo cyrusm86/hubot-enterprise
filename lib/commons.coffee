@@ -32,5 +32,14 @@ class Commons
     return ", did you mean *#{name}*?"
   help_msg: (content) ->
     return "help for hubot enterprise:\n"+content
+  authentication_message: (command, url) ->
+    return "To issue \`#{command}` I need permission to access your account. " +
+      "To do so, please visit the Hubot Enterprise Identity Portal" +
+      " at #{url}"
+  authentication_error_message: (e) ->
+    return 'There was an error trying to authenticate ' +
+        'your user in Hubot Enterprise. Please contact your system ' +
+        'administration and' +
+        ' provide him \/ her this error message: ' + e.toString()
 
 module.exports = Commons
