@@ -26,11 +26,13 @@ services:
   auth:
     image: chatopshpe/he-auth-service:latest
     environment:
-      HE_IDENTITY_PORTAL_ENDPOINT: "https://example.com"
-      HE_AUTH_JWT_SECRET: secret
-      MONGO: "mongodb://mongo:27017"
-      HE_AUTH_SSL_PASS: default
-      VAULT_DEV_ROOT_TOKEN_ID: myroot
+      HE_AUTH_JWT_SECRET:
+      HE_ISSUER:
+      HE_AUDIENCE:
+      HE_AUTH_SSL_PASS:
+      VAULT_DEV_ROOT_TOKEN_ID:
+      HE_IDENTITY_PORTAL_ENDPOINT:
+      HE_IDENTITY_WS_ENDPOINT:
     ports:
       - "3000:3000"
     depends_on:

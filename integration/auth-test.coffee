@@ -31,6 +31,8 @@ commons = new (require('../lib/commons.coffee'))()
 jose = require('node-jose')
 fs = require('fs')
 path = require('path')
+uuid = require('node-uuid')
+_ = require('lodash')
 
 Promise = require('bluebird')
 jwt = Promise.promisifyAll(require('jsonwebtoken'))
@@ -42,15 +44,18 @@ auth_service_endpoint = 'https://localhost:3000/'
 process.env[auth_lib.env.ENDPOINT] = auth_service_endpoint
 helper = new Helper(['../src/0_bootstrap.coffee'])
 
-
 encrypt_as_jwe = (key, payload, cb) ->
   opts =
     format: 'compact'
   keystore = jose.JWK.createKeyStore()
 
+  payloadFinal = payload
+  if _.isObject(payload)
+    payloadFinal = JSON.stringify(payload)
+
   keystore.add(key, 'pem', {use: 'enc'}).then (jwe_key) ->
     jose.JWE.createEncrypt(opts, jwe_key)
-    .update(JSON.stringify(payload)).final()
+    .update(payloadFinal).final()
     .then (jwe_token) ->
       cb(null, jwe_token)
     .catch (e) ->
@@ -157,11 +162,27 @@ describe 'Authentication', ->
     jwe_secrets = ''
 
     before (done) ->
+      now = new Date()
+      later = new Date(now)
+      later.setMinutes(later.getMinutes() + 5)
+      issuer = process.env.HE_ISSUER
+      audience = process.env.HE_AUDIENCE
+
+      expect(issuer).to.exist
+      expect(audience).to.exist
+
       jwt_payload =
+        iss: issuer
+        aud: audience
+        exp: later.getTime() / 1000
+        iat: now.getTime() / 1000
+        jti: uuid.v4(),
         user_info:
           id: user_id
         integration_info:
           name: integration_name
+          auth:
+            type: 'basic_auth'
 
       jwt_opts =
         algorithm: 'RS256'
@@ -187,6 +208,36 @@ describe 'Authentication', ->
       basic_auth = @room.robot.e.auth.generate_basic_auth({})
       @room.robot.e.registerIntegration(metadata, basic_auth)
 
+
+    it 'should send user a token_url if secrets not found ' +
+        '(not authenticated)', (done) ->
+      this.timeout(TEST_TIMEOUT)
+
+      # Authentication is enabled be default for this command
+      @room.robot.e.create(command_params, command_should_not_run)
+
+      expectedMsg = commons.authentication_message(command, '')
+
+      conversation = [
+        ['lucas', '@hubot basic_auth get something'],
+        ['hubot', '@lucas ' + expectedMsg]
+      ]
+
+      messages = @room.messages
+      @room.user.say(conversation[0][0], conversation[0][1]).then ->
+        expect_timeout = () ->
+          expect(messages.length).to.equal(2)
+          expect(messages[0]).to.eql(conversation[0])
+          expect(messages[1][0]).to.eql(conversation[1][0])
+          expect(messages[1][1]).to.contain(conversation[1][1])
+          done()
+        setTimeout(expect_timeout, ASYNC_MESSAGE_TIMEOUT)
+      .catch (e) ->
+        done(e)
+
+      # Needs this return statement to avoid returning a promise
+      return
+
     it 'should perform integration command when secrets exist', (done) ->
       this.timeout(TEST_TIMEOUT)
 
@@ -203,19 +254,16 @@ describe 'Authentication', ->
 
 
       authenticated_command = (msg, robot) ->
-        try
-          expect(msg).to.exist
-          expect(msg.auth).to.exist
-          expect(msg.auth.secrets).to.exist
-          expect(msg.auth.user_info).to.exist
-          expect(msg.auth.integration_info).to.exist
-          expect(msg.auth.secrets.token).to.exist
-          expect(msg.auth.user_info.id).to.exist
-          expect(msg.auth.integration_info.name).to.exist
-          expect(robot).to.exist
-          msg.reply success_reply
-        catch e
-          msg.reply e.toString()
+        expect(msg).to.exist
+        expect(msg.auth).to.exist
+        expect(msg.auth.secrets).to.exist
+        expect(msg.auth.user_info).to.exist
+        expect(msg.auth.integration_info).to.exist
+        expect(msg.auth.secrets.token).to.exist
+        expect(msg.auth.user_info.id).to.exist
+        expect(msg.auth.integration_info.name).to.exist
+        expect(robot).to.exist
+        msg.reply success_reply
 
       # Authentication is enabled be default for this command
       @room.robot.e.create(command_params, authenticated_command)
@@ -225,45 +273,16 @@ describe 'Authentication', ->
       ]
 
       # POST secrets in the he-auth-service
+      room = @room
       auth_client.saveSecretsAsync(secrets_payload).then ->
-        console.log('success posting secrets')
-        messages = @room.messages
-        @room.user.say(msg_interaction[0][0], msg_interaction[0][1]).then ->
+        messages = room.messages
+        room.user.say(msg_interaction[0][0], msg_interaction[0][1]).then ->
           expect_timeout = () ->
             expect(messages).to.eql msg_interaction
             done()
           setTimeout(expect_timeout, ASYNC_MESSAGE_TIMEOUT)
         .catch (e) ->
           done(e)
-      .catch (e) ->
-        done(e)
-
-      # Needs this return statement to avoid returning a promise
-      return
-
-    it 'should send user a token_url if secrets not found ' +
-        '(not authenticated)', (done) ->
-      this.timeout(TEST_TIMEOUT)
-
-      # Authentication is enabled be default for this command
-      @room.robot.e.create(command_params, command_should_not_run)
-
-      expectedMsg = commons.authentication_message(command, '')
-
-      conversation = [
-        ['pedro', '@hubot basic_auth get something'],
-        ['hubot', '@pedro ' + expectedMsg]
-      ]
-
-      messages = @room.messages
-      @room.user.say(conversation[0][0], conversation[0][1]).then ->
-        expect_timeout = () ->
-          expect(messages.length).to.equal(2)
-          expect(messages[0]).to.eql(conversation[0])
-          expect(messages[1][0]).to.eql(conversation[1][0])
-          expect(messages[1][1]).to.contain(conversation[1][1])
-          done()
-        setTimeout(expect_timeout, ASYNC_MESSAGE_TIMEOUT)
       .catch (e) ->
         done(e)
 
