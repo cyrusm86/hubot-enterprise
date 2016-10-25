@@ -89,11 +89,11 @@ module.exports = (robot) ->
   # register hubot enterprise functions
   robot.e.create {verb: 'archive', entity: 'channel',
   example: '#channelName', type: 'respond',
-  help: '<this|#name>- archive specific channel'},
+  help: '<this|#name>- archive specific channel', name: 'admin'},
   archive_channel
 
   robot.e.create {verb: 'archive', entity: 'older', example: '5d',
   regex_suffix: {re: "([0-9]+)([dDhHmMsS]) ?(.*)", optional: false},
   help: '<N>(D/H/M/S) (named|tag) <name|tag> or <name|tag>- '+
-  'archive channels older than by name or by topic', type: 'respond'},
+  'archive channels older than by name or by topic', type: 'respond', name: 'admin'},
   archive_older

@@ -214,7 +214,11 @@ module.exports = (robot) ->
   #  type: one of the allowed type in auth module, e.g: 'username_password'
   #  options: auth options corresponding to selected auth.type
   robot.e.registerIntegration = (metadata, authentication) ->
-    integration_name = find_integration_name()
+#    integration_name = find_integration_name()
+    integration_name = metadata.name
+    console.log('--------')
+    console.log(metadata)
+    console.log(integration_name)
     if _.includes(reserverd_apps, integration_name)
       throw new Error("integration name cannot have reserved name " +
           integration_name)
@@ -280,7 +284,8 @@ module.exports = (robot) ->
     if handler_type != 'function'
       throw new Error('callback is not a function but a ' + handler_type)
     info.cb = callback
-    integration_name = find_integration_name()
+#    integration_name = find_integration_name()
+    integration_name = info.name
     re = build_enterprise_regex(info, integration_name)
     robot.logger.debug("HE registering call:\n" +
         "\trobot.#{info.type} #{re.toString()}")
