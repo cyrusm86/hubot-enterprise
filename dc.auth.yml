@@ -23,6 +23,8 @@ services:
     environment:
       HE_ENABLE_AUTH: 1
       HE_AUTH_SERVICE_ENDPOINT: https://auth:3000
+    networks:
+      - auth_net
   auth:
 #    image: chatopshpe/he-auth-service:latest
     image: heauthservice_he-auth-service
@@ -33,7 +35,7 @@ services:
       VAULT_DEV_ROOT_TOKEN_ID: myroot
       HE_VAULT_HOST: vault
       HE_VAULT_PORT: 8200
-      HE_IDENTITY_PORTAL_ENDPOINT: https://localhost:3002
+      HE_IDENTITY_PORTAL_ENDPOINT: https://localhost:443
       HE_IDENTITY_WS_ENDPOINT: ws://identity-portal:3001
     depends_on:
       - vault
@@ -64,13 +66,15 @@ services:
       HE_ISSUER: eedevops
     depends_on:
       - transient-datastore
+    volumes:
+      - ./certs:/server/certs
   proxy:
     image: nginx:1.11-alpine
     volumes:
       - $PWD/certs:/etc/nginx/external
       - $PWD/script/nginx.conf:/etc/nginx/conf.d/docker-registry.conf
     ports:
-      - "3002:443"
+      - "443:443"
     networks:
       - proxy_net
     depends_on:
