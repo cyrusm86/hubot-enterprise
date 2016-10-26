@@ -26,8 +26,7 @@ services:
     networks:
       - auth_net
   auth:
-#    image: chatopshpe/he-auth-service:latest
-    image: heauthservice_he-auth-service
+    image: chatopshpe/he-auth-service:latest
     environment:
       HE_ISSUER: eedevops
       HE_AUDIENCE: chatops_users
@@ -54,7 +53,7 @@ services:
     networks:
       - vault_net
   identity-portal:
-    image: heidentityportal_identity-portal:latest
+    image: chatopshpe/he-identity-portal:latest
     networks:
       - proxy_net
       - idp_net
