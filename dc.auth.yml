@@ -22,24 +22,70 @@ services:
   he:
     environment:
       HE_ENABLE_AUTH: 1
-      HE_AUTH_SERVICE_ENDPOINT: https://auth
+      HE_AUTH_SERVICE_ENDPOINT: https://auth:3000
+    networks:
+      - auth_net
   auth:
     image: chatopshpe/he-auth-service:latest
     environment:
-      HE_IDENTITY_PORTAL_ENDPOINT: "https://example.com"
-      HE_AUTH_JWT_SECRET: secret
-      MONGO: "mongodb://mongo:27017"
+      HE_ISSUER: eedevops
+      HE_AUDIENCE: chatops_users
       HE_AUTH_SSL_PASS: default
       VAULT_DEV_ROOT_TOKEN_ID: myroot
-    ports:
-      - "3000:3000"
+      HE_VAULT_HOST: vault
+      HE_VAULT_PORT: 8200
+      HE_IDENTITY_PORTAL_ENDPOINT: https://localhost:443
+      HE_IDENTITY_WS_ENDPOINT: ws://identity-portal:3001
     depends_on:
       - vault
+      - identity-portal
     volumes:
       - ./certs:/usr/src/app/certs
+    networks:
+      - auth_net
+      - vault_net
   vault:
     image: vault:0.6.1
     environment:
       VAULT_DEV_ROOT_TOKEN_ID: myroot
       # need to bind to 0.0.0.0 so that it accepts remote connections (!localhost)
       VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+    networks:
+      - vault_net
+  identity-portal:
+    image: chatopshpe/he-identity-portal:latest
+    networks:
+      - proxy_net
+      - idp_net
+      - auth_net
+    environment:
+      HE_REDIS_HOST: transient-datastore
+      HE_REDIS_PORT: 6379
+      HE_AUDIENCE: chatops_users
+      HE_ISSUER: eedevops
+    depends_on:
+      - transient-datastore
+    volumes:
+      - ./certs:/server/certs
+  proxy:
+    image: nginx:1.11-alpine
+    volumes:
+      - $PWD/certs:/etc/nginx/external
+      - $PWD/script/nginx.conf:/etc/nginx/conf.d/docker-registry.conf
+    ports:
+      - "443:443"
+    networks:
+      - proxy_net
+    depends_on:
+      - identity-portal
+  transient-datastore:
+    image: redis:3.2-alpine
+    networks:
+      - idp_net
+
+# TODO: limit visibility of docker containers if possible.
+networks:
+  proxy_net:
+  idp_net:
+  auth_net:
+  vault_net:
