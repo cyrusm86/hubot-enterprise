@@ -276,6 +276,7 @@ describe 'Authentication', ->
 
       conversation = [
         ['pedro', '@hubot basic_auth get something'],
+        ['hubot', '@pedro ' + commons.authentication_announcement(command)],
         ['hubot', '@pedro ' + expectedError]
       ]
 
@@ -317,6 +318,7 @@ describe 'Authentication', ->
 
       conversation = [
         ['pedro', '@hubot basic_auth get something'],
+        ['hubot', '@pedro ' + commons.authentication_announcement(command)]
         ['hubot', '@pedro ' + expectedError]
       ]
 
@@ -366,6 +368,7 @@ describe 'Authentication', ->
 
       conversation = [
         ['pedro', '@hubot basic_auth get something'],
+        ['hubot', '@pedro ' + commons.authentication_announcement(command)],
         ['hubot', '@pedro ' + expectedMsg]
       ]
 
