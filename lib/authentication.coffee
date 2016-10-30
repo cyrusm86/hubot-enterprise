@@ -46,12 +46,12 @@ generate_basic_auth = (params) ->
     params: params
   }
 
-setup_auth_client = () ->
+setup_auth_client = (robot) ->
   auth_enabled = process.env.HE_ENABLE_AUTH || false
   he_auth_service_endpoint = process.env.HE_AUTH_SERVICE_ENDPOINT || false
 
   if !auth_enabled || !he_auth_service_endpoint
-    console.log('Authentication is not enabled')
+    robot.logger.debug('Authentication is not enabled')
     return null
 
   config =
