@@ -147,7 +147,7 @@ describe 'Authentication', ->
 
       authenticated_command = (msg, auth) ->
         try
-          expect(auth).to.exist
+          expect(msg).to.exist
           expect(auth).to.exist
           expect(auth.secrets).to.exist
           expect(auth.user_info).to.exist
