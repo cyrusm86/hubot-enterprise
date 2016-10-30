@@ -133,14 +133,12 @@ class AdapterCore
     opt =
       user: msg.user
       room: msg.room
-      custom_msg: !msg.envelope
+      custom_msg: !!msg.room
     # if not custom message, try to get from msg.envelope (fallback to custom)
     if not opt.custom_msg
       if msg.envelope.user
         opt.user = msg.envelope.user.name || opt.user
       opt.room = msg.envelope.room || opt.room
-    if opt.custom_msg && !opt.room
-      throw new Error "No room specified in custom message"
     if @adapter.customMessage
       return @adapter.customMessage(@robot, msg, message, opt, reply)
     return @messageFallback(msg, message, opt, reply)
@@ -151,7 +149,7 @@ class AdapterCore
     toSend = []
     if opt.custom_msg
       @robot.logger.error 'Cannot send special custom messages '+
-        '(robot.e.message)'
+        '(robot.e.message), falling back to msg.reply/send'
     if typeof message == 'string'
       toSend = message
     else
@@ -164,11 +162,11 @@ class AdapterCore
           toSend.push(message.link_desc+": "+message.link)
         else
           toSend.push(message.link)
-      if msg.footer
+      if message.footer
         toSend.push(message.footer)
       toSend = toSend.join('\n')
     if (reply)
-      return msg.respond(toSend)
+      return msg.reply(toSend)
     return msg.send toSend
 
 module.exports = AdapterCore

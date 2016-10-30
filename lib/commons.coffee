@@ -36,6 +36,9 @@ class Commons
     return "To issue \`#{command}` I need permission to access your account. " +
       "To do so, please visit the Hubot Enterprise Identity Portal" +
       " at #{url}"
+  authentication_announcement: (command) ->
+    return "To issue \`#{command}` I need permission to access your account. " +
+      "A private message will be sent to you."
   authentication_error_message: (e) ->
     return 'There was an error trying to authenticate ' +
         'your user in Hubot Enterprise. Please contact your system ' +
