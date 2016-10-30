@@ -29,5 +29,5 @@ services:
     environment:
       HUBOT_LOG_LEVEL: debug
       ADAPTER: slack
-      HUBOT_APP_TOKEN:
+      SLACK_APP_TOKEN:
       HUBOT_SLACK_TOKEN:
