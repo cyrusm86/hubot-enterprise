@@ -145,17 +145,16 @@ describe 'Authentication', ->
       success_reply = 'You successfully executed command for integration ' +
         integration_name
 
-      authenticated_command = (msg, robot) ->
+      authenticated_command = (msg, auth) ->
         try
-          expect(msg).to.exist
-          expect(msg.auth).to.exist
-          expect(msg.auth.secrets).to.exist
-          expect(msg.auth.user_info).to.exist
-          expect(msg.auth.integration_info).to.exist
-          expect(msg.auth.secrets.token).to.exist
-          expect(msg.auth.user_info.id).to.exist
-          expect(msg.auth.integration_info.name).to.exist
-          expect(robot).to.exist
+          expect(auth).to.exist
+          expect(auth).to.exist
+          expect(auth.secrets).to.exist
+          expect(auth.user_info).to.exist
+          expect(auth.integration_info).to.exist
+          expect(auth.secrets.token).to.exist
+          expect(auth.user_info.id).to.exist
+          expect(auth.integration_info.name).to.exist
           msg.reply success_reply
         catch e
           msg.reply e.toString()
