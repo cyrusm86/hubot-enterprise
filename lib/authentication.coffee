@@ -22,7 +22,7 @@ auth = require('he-auth-service')
 Promise = require('bluebird')
 auth_client = require('he-auth-service').client
 promisified_client = Promise.promisifyAll(auth_client)
-
+log = require('./fluentd.es6')
 TYPES =
   BASIC_AUTH: "BASIC_AUTH"
 
@@ -51,7 +51,7 @@ setup_auth_client = (robot) ->
   he_auth_service_endpoint = process.env.HE_AUTH_SERVICE_ENDPOINT || false
 
   if !auth_enabled || !he_auth_service_endpoint
-    robot.logger.debug('Authentication is not enabled')
+    log.debug('Authentication is not enabled')
     return null
 
   config =
