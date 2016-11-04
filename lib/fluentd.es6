@@ -1,9 +1,9 @@
-if (process.env.USE_FLUENTD) {
+if (process.env.FLUENTD_HOST && process.env.FLUENTD_PORT) {
   let fluent = require('fluent-logger');
 
   fluent.configure('hubotEnterprise', {
-    host: 'logger',
-    port: 24224,
+    host: process.env.FLUENTD_HOST,
+    port: process.env.FLUENTD_PORT,
     timeout: 3.0,
     reconnectInterval: 600000 // 10 minutes
   });
