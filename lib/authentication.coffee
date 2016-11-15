@@ -51,7 +51,7 @@ setup_auth_client = (robot) ->
   he_auth_service_endpoint = process.env.HE_AUTH_SERVICE_ENDPOINT || false
 
   if !auth_enabled || !he_auth_service_endpoint
-    log.debug('Authentication is not enabled')
+    robot.logger.debug('Authentication is not enabled')
     return null
 
   config =

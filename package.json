@@ -32,7 +32,7 @@
     "node-jose": "^0.9.1",
     "node-uuid": "^1.4.7",
     "request": "^2.69.0",
-    "winston": "~2.2.0"
+    "winston": "^2.2.0"
   },
   "peerDependencies": {
     "hubot": "2.x"

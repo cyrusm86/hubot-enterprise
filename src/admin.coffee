@@ -35,11 +35,11 @@ module.exports = (robot) ->
       channel = msg.envelope.message.room
     else
       channel = '#'+msg.match[1]
-    log.debug 'archiving channel: #'+channel
+    robot.logger.debug 'archiving channel: #'+channel
     msg.reply 'Yes sir!'
     archive.archive_channel(msg, channel)
     .catch (e) ->
-      log.debug e
+      robot.logger.debug e
       msg.reply 'Error: '+e
 
   archive_older = (msg, _robot) ->
@@ -76,10 +76,10 @@ module.exports = (robot) ->
       '" older than '+msg.match[1]+timeType+' by '+type
     archive.archive_old(msg, seconds, patterns, room, type)
     .then (response) ->
-      log.debug 'back from Promise {#response}'
+      robot.logger.debug 'back from Promise {#response}'
       msg.reply 'done, total archived: '+response.totalArchived
     .catch (e) ->
-      log.debug e
+      robot.logger.debug e
       msg.reply 'Error: '+e
 
   # register module
