@@ -75,8 +75,6 @@ module.exports = (robot) ->
 
   transports = [new(winstonLogger.transports.Console)(consoleOpts)]
   if process.env.FLUENTD_HOST && process.env.FLUENTD_PORT
-    console.log("got a host and port, using fluentd for logging")
-    transports.pop()
     FLUENTD_RECONNECT_DEFAULT = 600000
     FLUENTD_DEFAULT_TIMEOUT = 10
     logConfig = {
