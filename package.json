@@ -22,7 +22,7 @@
     "coffee-script": "1.6.3",
     "did-you-mean": "^0.0.1",
     "easy-table": "^1.0.0",
-    "he-auth-service": "github:eedevops/he-auth-service",
+    "he-auth-service": "github:eedevops/he-auth-service#dev",
     "insight": "^0.8.2",
     "jsonwebtoken": "^7.1.9",
     "lodash": "^4.6.1",
