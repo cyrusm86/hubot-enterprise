@@ -20,10 +20,12 @@
 #  SOFTWARE.
 auth = require('he-auth-service')
 Promise = require('bluebird')
-auth_client = require('he-auth-service').client
+auth_service = require('he-auth-service')
+auth_client = auth_service.client
+auth_lib = auth_service.lib
 promisified_client = Promise.promisifyAll(auth_client)
 TYPES =
-  BASIC_AUTH: "BASIC_AUTH"
+  BASIC_AUTH: auth_lib.authMethods.BASIC_AUTH
 
 env =
   ENDPOINT: 'HE_AUTH_SERVICE_ENDPOINT'
