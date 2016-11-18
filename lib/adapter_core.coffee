@@ -28,7 +28,6 @@ fs = require 'fs'
 Promise = require 'bluebird'
 adapters_path = __dirname+'/advanced_adapter/adapter-'
 table = require 'easy-table'
-log = require './fluentd.es6'
 #list of advanced commands: with elevated permissions
 advanced_commands = []
 
@@ -65,11 +64,11 @@ class AdapterCore
     _robot = @robot
     _adapter = @adapter
     return new Promise (resolve, reject) ->
-      robot.logger.debug "Adapter CORE: request to exec #{command} with "+
+      _robot.logger.debug "Adapter CORE: request to exec #{command} with "+
         "params: {#params}"
       # reject promise  if no adapter (can be cougnt using .catch function)
       if not _adapter[command]
-        robot.logger.debug "command #{command} not available for adapter "+
+        _robot.logger.debug "command #{command} not available for adapter "+
           _robot.adapterName
         return reject("command #{command} not available for adapter "+
           _robot.adapterName)
@@ -77,7 +76,7 @@ class AdapterCore
       user_info = {}
       # reject promise if user have no right to make this call
       if not _this.approve_command user_info, command
-        robot.logger.debug "command #{command} not approved for user"
+        _robot.logger.debug "command #{command} not approved for user"
         reject("command #{command} not approved for user")
       else
         # resolve if all ok, use .apply to expand arr of params to function
@@ -148,7 +147,7 @@ class AdapterCore
   messageFallback: (msg, message, opt, reply) ->
     toSend = []
     if opt.custom_msg
-      robot.logger.error 'Cannot send special custom messages '+
+      @robot.logger.error 'Cannot send special custom messages '+
         '(robot.e.message), falling back to msg.reply/send'
     if typeof message == 'string'
       toSend = message

@@ -21,7 +21,6 @@
 
 _ = require 'lodash'
 Matcher = require 'did-you-mean'
-log = require './fluentd.es6'
 class Help
 
   # constructor for help
@@ -56,17 +55,17 @@ class Help
       "[ ]?(\\w+)?[ ]?(\\w+)?[ ]?(\\w+)?", 'i'))
     if (msg.match = msg.message.text.match(help_re))
       help = @show_help(registrar, msg.match[2], msg.match[3], msg.match[4])
-      robot.logger.debug help
-      robot.logger.debug 'msg.message.text: '+msg.message.text
+      @robot.logger.debug help
+      @robot.logger.debug 'msg.message.text: '+msg.message.text
       # if found integration: display only HE help
       if (help.found_app == true)
-        robot.logger.debug 'Help: KILL MESSAGE CHAIN'
+        @robot.logger.debug 'Help: KILL MESSAGE CHAIN'
         msg.message.finish()
       else
         # changing current keyword to help: for hubot-help to work
         msg.message.text = msg.message.text.replace(msg.match[1], 'help')
         help.text = help.text+"\nHubot help:\n"
-      robot.logger.debug 'Showing enterprise help'
+      @robot.logger.debug 'Showing enterprise help'
       msg.reply @commons.help_msg(help.text)
 
   # return enterprise help as string

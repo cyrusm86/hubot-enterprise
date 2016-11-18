@@ -22,7 +22,6 @@ auth = require('he-auth-service')
 Promise = require('bluebird')
 auth_client = require('he-auth-service').client
 promisified_client = Promise.promisifyAll(auth_client)
-log = require('./fluentd.es6')
 TYPES =
   BASIC_AUTH: "BASIC_AUTH"
 

@@ -23,7 +23,6 @@
 #AdminExt = require './admin-slack'
 Promise = require 'bluebird'
 moment = require 'moment'
-log = require './fluentd.es6'
 ARCH_PREFIX = 'ARCH-'
 #adapter = new AdminExt()
 
@@ -38,27 +37,27 @@ class Archive
     for channel in channels
       to_test = if (type == 'name') then channel.name else channel.topic
       if regex.test(to_test) && channel.name!=current
-        robot.logger.debug to_test
+        @robot.logger.debug to_test
         ret.push channel
     return ret
 
   archive_single: (msg, channel) ->
     _adapter = @adapter
     _robot = @robot
-    robot.logger.debug channel
-    robot.logger.debug 'joining'
+    @robot.logger.debug channel
+    @robot.logger.debug 'joining'
     return _adapter.exec(msg, 'join', channel.name)
     .then (res) ->
-      robot.logger.debug 'join: ' + res + ', -> setTopic'
+      _robot.logger.debug 'join: ' + res + ', -> setTopic'
       return _adapter.exec(msg, 'setTopic', channel.id, channel.name)
       .then (res) ->
-        robot.logger.debug 'setTopic: '+res+' , -> archive'
+        _robot.logger.debug 'setTopic: '+res+' , -> archive'
         return _adapter.exec(msg, 'archive', channel.id)
       .then (res) ->
-        robot.logger.debug 'archive: '+res+', -> rename'
+        _robot.logger.debug 'archive: '+res+', -> rename'
         return _adapter.exec(msg, 'rename', channel.id, ARCH_PREFIX+Date.now())
       .then (res) ->
-        robot.logger.debug 'rename: '+res+', -> BACK'
+        _robot.logger.debug 'rename: '+res+', -> BACK'
         msg.reply 'archived channel: '+channel.name+' ('+channel.id+'), '+
             'created '+moment(channel.created*1000).fromNow()
         return channel.name
@@ -66,7 +65,7 @@ class Archive
   archive_channel: (msg, channel) ->
     _adapter = @adapter
     _this = this
-    robot.logger.debug "in archive channel"
+    @robot.logger.debug "in archive channel"
     return _adapter.exec(msg, 'channelInfo', channel)
     .then (res) ->
       return _this.archive_single(msg, res)
@@ -78,17 +77,17 @@ class Archive
     type = type || 'name'
     channelPatterns = new RegExp('('+(patterns.join '|')+')', 'i')
     now = Math.floor(Date.now()/1000)
-    robot.logger.debug 'Archiving older than :'+seconds+' seconds'
+    _robot.logger.debug 'Archiving older than :'+seconds+' seconds'
     return @adapter.exec(msg, 'channelList', true)
     .then (res) ->
       channels = _this.sort_channels(msg, res, thisChannel, channelPatterns,
         type)
       return Promise.map(channels, (channel) ->
         create_time = now - channel.created
-        robot.logger.debug 'Channel: '+channel.name+' Create elapsed time: '+
+        _robot.logger.debug 'Channel: '+channel.name+' Create elapsed time: '+
           create_time+' created time: '+channel.created
         if create_time > seconds
-          robot.logger.debug 'archiving '+channel.name+' '+channel.id+
+          _robot.logger.debug 'archiving '+channel.name+' '+channel.id+
             ' ('+create_time+')'
           return _this.archive_single(msg, channel)
           .then (res) ->
@@ -96,11 +95,11 @@ class Archive
             return res
       )
       .then (res) ->
-        robot.logger.debug 'MAP DONE'
+        _robot.logger.debug 'MAP DONE'
         res.totalArchived = totalArchived
         return res
       .catch (err) ->
-        robot.logger.debug 'ERROR:'+err
+        _robot.logger.debug 'ERROR:'+err
         err.totalArchived = totalArchived
         return err
 module.exports = Archive
